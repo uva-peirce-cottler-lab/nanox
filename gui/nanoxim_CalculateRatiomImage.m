@@ -7,16 +7,16 @@ function [ratio_img bw_pixpass] = nanoxim_CalculateRatiomImage(vid_handle, ...
 
 % Background image: Locate first frame,load specififed frames after
 vid_handle.CurrentTime=(bck_frame_range(1)-1)/vid_handle.FrameRate;
-bck_zimg = zeros(vid_handle.Height,vid_handle.Width,3,abs(diff(bck_frame_range))+1,'uint8');
+bck_zimg = zeros(vid_handle.Height,vid_handle.Width,3,abs(diff(bck_frame_range))+1,'uint16');
 for t=1:abs(diff(bck_frame_range))
     bck_zimg(:,:,:,t)=readFrame(vid_handle);
 end
-bck_img = max(bck_zimg,[],4);
+bck_img = max(bck_zimg,[],4)-10;
 
 
 % Background image: Locate first frame,load specififed frames after
 vid_handle.CurrentTime=(for_frame_range(1)-1)/vid_handle.FrameRate;
-for_zimg = zeros(vid_handle.Height,vid_handle.Width,3,abs(diff(for_frame_range))+1,'uint8');
+for_zimg = zeros(vid_handle.Height,vid_handle.Width,3,abs(diff(for_frame_range))+1,'uint16');
 for t=1:abs(diff(for_frame_range))
     for_zimg(:,:,:,t)=readFrame(vid_handle);
 end
@@ -30,5 +30,8 @@ bs_green = for_img(:,:,2) - bck_img(:,:,2);
 ratio_img = double(bs_blue)./double(bs_green);
 
 % Filter only valid pixels
-bw_pixpass = bs_blue>4 & bs_green>4; 
+bw_pixpass = bs_blue>1 & bs_green>1; 
+% keyboard
+fprintf('Fraction of Image with Valid Data: %.2f\n',sum(bw_pixpass(:))/numel(bw_pixpass))
+
 % keyboard

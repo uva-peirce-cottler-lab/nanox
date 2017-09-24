@@ -115,7 +115,6 @@ img=readFrame(vid_handle);
 
 set(handles.text_frame_ind,'String',sprintf('%0.f',slider_val));
 imshow(img,'Parent',handles.axes_img);
-colormap winter
 % keyboard  
 
 
@@ -136,14 +135,12 @@ function pushbutton_load_video_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton_load_video (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-input_path = getappdata(handles.figure_nanoxim,'input_path');
+browse_path = getappdata(handles.figure_nanoxim,'browse_path');
 
 % Get list of movies
-%  = dir([input_path '/*.avi']);
-%
 mv_list = get(handles.listbox_mv_names,'String');
 
-current_mv_path = [input_path '/' mv_list{get(handles.listbox_mv_names,'Value')}];
+current_mv_path = [browse_path '/' mv_list{get(handles.listbox_mv_names,'Value')}];
 setappdata(handles.figure_nanoxim,'current_mv_path',current_mv_path);
 
 % read video
@@ -187,15 +184,29 @@ function pushbutton_browse_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton_browse (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-input_path = uigetdir(getappdata(handles.figure_nanoxim,...
-    'input_path'),'Select Movie Folder');
-if input_path==0; return; end
 
-setappdata(handles.figure_nanoxim,'input_path',input_path);
+browse_path = pwd;
+% If previous browse path is saved to disk, load and use that
+temp_data_path = getappdata(0, 'temp_data_path');
+if ~isempty(dir([temp_data_path '/nanoxim_gui.mat']))
+    st = load([temp_data_path '/nanoxim_gui.mat']);
+    if isfield(st,'browse_path')
+        browse_path = st.browse_path;
+    end
+else; st=struct();
+end
+% keyboard
+browse_path = uigetdir(browse_path,'Select Movie Folder');
+if browse_path==0; return; end
+
+% Save path to memory and file system
+setappdata(handles.figure_nanoxim,'browse_path',browse_path);
+st.browse_path = browse_path;
+save([temp_data_path '/nanoxim_gui.mat'],'-struct','st');
+
 
 % Get list of movies
-mv_list = dir([input_path '/*.avi']);
-%
+mv_list = dir([browse_path '/*.avi']);
 set(handles.listbox_mv_names,'String',{mv_list(:).name});
 
 
@@ -213,19 +224,28 @@ for_frame_range = [handles.rslider_for.getLowValue() handles.rslider_for.HighVal
 vid_handle = getappdata(handles.figure_nanoxim,'vid_handle');
 
 
-[ratio_img bw_pxpass] = nanoxim_CalculateRatiomImage(vid_handle, ...
+[ratio_img bw_pix_pass] = nanoxim_CalculateRatiomImage(vid_handle, ...
     bck_frame_range, for_frame_range);
 setappdata(handles.figure_nanoxim,'ratio_img',ratio_img);
-setappdata(handles.figure_nanoxim,'bw_pxpass',bw_pxpass);
+setappdata(handles.figure_nanoxim,'bw_pix_pass',bw_pix_pass);
 
 % Update image controls (slider max/min)
-imshow(ratio_img,'Parent',handles.axes_ratiom);
+ratio_img(~bw_pix_pass)=NaN;
+h=imshow(ratio_img,'Parent',handles.axes_ratiom);
 colormap(handles.axes_ratiom, jet);
-colorbar
-img = getframe(handles.axes_ratiom);
-figure;imshow(img.cdata)
-keyboard
+set(h,'AlphaData',bw_pix_pass)
+colorbar(handles.axes_ratiom);
+ 
+% img = getframe(handles.axes_ratiom);
 
+% img.cdata(cat(3,bw_pix_pass,bw_pix_pas s,bw_pix_pass))=1;
+% hold on
+% imshow(img.cdata)
+% hold off
+ 
+% figure;imshow(img.cdata)
+keyboard
+ 
 % keyboard
 
 % --- Executes on slider movement

@@ -68,9 +68,10 @@ function paths_added = DEV_INITIALIZE(varargin)
 
 %% Get local Directory of Mfile
 proj_path = fileparts(mfilename('fullpath'));
-data_path = 'C:\Users\bac\Box Sync\1. ARCAS\ExperimentData\Matlab_Analysis_Data';
+temp_data_path = [proj_path '/temp_data'];
+if isempty(dir(temp_data_path)); mkdir(temp_data_path); end
 setappdata(0, 'proj_path', proj_path);
-setappdata(0, 'data_path', data_path);
+setappdata(0, 'temp_data_path', temp_data_path);
 
 %% ARGUMENT PARSING
 % What is not an Parameter is an optinal arg (param words must fail
