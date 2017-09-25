@@ -1,4 +1,5 @@
-function [hcomponent, hcontainer, rangeSlider] = gui_RangeSlider(val_range,pos,label)
+function [hcomponent, hcontainer, rangeSlider] = gui_RangeSlider(val_range,...
+    pos,label,orient,handles)
     % Add the 3rd Party Jar, should use static path but for the example, we
     % use dynamic
     javaaddpath('C:\Users\bac\Documents\Repo nanoxim\gui\jide_demo.jnlp')
@@ -25,16 +26,20 @@ function [hcomponent, hcontainer, rangeSlider] = gui_RangeSlider(val_range,pos,l
 
     rangeSlider = RangeSlider(val_range(1), val_range(2), ...
         val_range(1), val_range(2));
+    rangeSlider.setOrientation(~strcmp(orient,'horizontal'));
     rangeSlider.setPaintTicks(true);
     rangeSlider.setPaintLabels(true);
     rangeSlider.setPaintTrack(true);
     rangeSlider.setRangeDraggable(false);
-    rangeSlider.setMajorTickSpacing(25);
+    rangeSlider.setMajorTickSpacing(20);
     rangeSlider = handle(rangeSlider, 'CallbackProperties');
 
     function updateValues(~, ~)
         minField.setText(num2str(rangeSlider.getLowValue()));
         maxField.setText(num2str(rangeSlider.getHighValue()));
+        if strcmp(label,'RAT')
+            gui_UpdateRatiomImage(rangeSlider, 'callback', handles)
+        end
     end
 
     rangeSlider.StateChangedCallback = @updateValues;
@@ -42,30 +47,36 @@ function [hcomponent, hcontainer, rangeSlider] = gui_RangeSlider(val_range,pos,l
     minField.setText(num2str(rangeSlider.getLowValue()));
     maxField.setText(num2str(rangeSlider.getHighValue()));
 
-%     labelPanel = JPanel(BorderLayout());
-%     labelPanel.add(JLabel('BCK', BorderLayout.BEFORE_FIRST_LINE)
-   
-    
+    % Min and max panels
     minPanel = JPanel(BorderLayout());
-    minPanel.add(JLabel('Min'), BorderLayout.BEFORE_FIRST_LINE);
     minField.setEditable(false);
     minPanel.add(minField);
-
+    
     maxPanel = JPanel(BorderLayout());
-    maxPanel.add(JLabel('Max', SwingConstants.TRAILING),...
-        BorderLayout.BEFORE_FIRST_LINE);
     maxField.setEditable(false);
     maxPanel.add(maxField);
 
-    textFieldPanel = JPanel(GridLayout(1, 3));
+    if strcmp(orient,'horizontal')
+        textFieldPanel = JPanel(GridLayout(1, 3));
+    else
+        textFieldPanel = JPanel(GridLayout(3, 1));
+    end
+    
+    
     textFieldPanel.add(JLabel(label));
     textFieldPanel.add(minPanel);
-    textFieldPanel.add(JPanel());
     textFieldPanel.add(maxPanel);
 
+    
     panel = JPanel(BorderLayout());
-    panel.add(rangeSlider, BorderLayout.CENTER);
-    panel.add(textFieldPanel, BorderLayout.WEST);
+    if strcmp(orient,'horizontal')
+        panel.add(rangeSlider, BorderLayout.CENTER);
+        panel.add(textFieldPanel, BorderLayout.WEST);
+    else
+        panel.add(rangeSlider, BorderLayout.CENTER);
+        panel.add(textFieldPanel, BorderLayout.NORTH);
+    end
+    
     % hcontainer can be used to interact with panel like uicontrol
     [hcomponent, hcontainer] = javacomponent(panel, pos, gcf);
  

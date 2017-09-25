@@ -1,7 +1,8 @@
-function [ratio_img bw_pixpass] = nanoxim_CalculateRatiomImage(vid_handle, ...
+function [ratio_img, bw_pixpass] = nanoxim_CalculateRatiomImage(vid_handle, ...
     bck_frame_range, for_frame_range)
 
-
+rgb_sig_thresh = [3 3 3];
+blur_rad_pix = 50;
 
 % slider_val = get(handles.slider_frame_ind,'Value');
 
@@ -11,7 +12,7 @@ bck_zimg = zeros(vid_handle.Height,vid_handle.Width,3,abs(diff(bck_frame_range))
 for t=1:abs(diff(bck_frame_range))
     bck_zimg(:,:,:,t)=readFrame(vid_handle);
 end
-bck_img = max(bck_zimg,[],4)-10;
+bck_img = imfilter(max(bck_zimg,[],4),fspecial('gaussian',50, 10*4096));
 
 
 % Background image: Locate first frame,load specififed frames after
@@ -20,17 +21,17 @@ for_zimg = zeros(vid_handle.Height,vid_handle.Width,3,abs(diff(for_frame_range))
 for t=1:abs(diff(for_frame_range))
     for_zimg(:,:,:,t)=readFrame(vid_handle);
 end
-for_img = max(for_zimg,[],4);
+for_img = imfilter(max(for_zimg,[],4),fspecial('gaussian',50, 10*4096));
 
 % background subtraction 
 bs_blue = for_img(:,:,3) - bck_img(:,:,3);
-bs_green = for_img(:,:,2) - bck_img(:,:,2);
+bs_red = for_img(:,:,1) - bck_img(:,:,1);
 
 % Calculate ratio image
-ratio_img = double(bs_blue)./double(bs_green);
+ratio_img = double(bs_blue)./double(bs_red);
 
 % Filter only valid pixels
-bw_pixpass = bs_blue>1 & bs_green>1; 
+bw_pixpass = bs_blue>rgb_sig_thresh(3) & bs_red>rgb_sig_thresh(1); 
 % keyboard
 fprintf('Fraction of Image with Valid Data: %.2f\n',sum(bw_pixpass(:))/numel(bw_pixpass))
 

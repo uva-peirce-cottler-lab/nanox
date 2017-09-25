@@ -22,7 +22,7 @@ function varargout = nanoxim(varargin)
 
 % Edit the above text to modify the response to help nanoxim
 
-% Last Modified by GUIDE v2.5 24-Sep-2017 10:52:18
+% Last Modified by GUIDE v2.5 25-Sep-2017 11:06:53
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -57,14 +57,16 @@ handles.output = hObject;
 
 % Create a background range slider 
 pos = get(handles.slider_frame_ind,'position');
-[handles.rslider_bck_hcomp, handles.rslider_bck_hcont, handles.rslider_bck] = gui_RangeSlider([1 100],...
-    [pos(1) pos(2)-45 pos(3) 40],'BCK');
-[handles.rslider_bck_hcomp, handles.rslider_bck_hcont, handles.rslider_for] = gui_RangeSlider([1 100],...
-    [pos(1) pos(2)-85 pos(3) 40],'FOR');
+[handles.rslider_bck_hcomp, handles.rslider_bck_hcont, handles.rslider_bck] = ...
+    gui_RangeSlider([1 100],[pos(1) pos(2)-45 pos(3) 40],'BCK','horizontal',handles);
+% Create a forground range slider 
+[handles.rslider_bck_hcomp, handles.rslider_bck_hcont, handles.rslider_for] = ...
+    gui_RangeSlider([1 100],[pos(1) pos(2)-85 pos(3) 40],'FOR','horizontal',handles);
+% Ratiometrix threshold slider
+pos = get(handles.uipanel_ratiom,'position');
+[handles.rslider_ratiom_hcomp, handles.rslider_ratiom_hcont, handles.rslider_ratiom] = ...
+    gui_RangeSlider([0 100],[pos(1)+pos(3) pos(2) 40 pos(4)],'RAT','vertical',handles);
 
-% num2str(handles.rslider_bck.getLowValue())
-% keyboard
-% Create a foreground slider
 
 % Remove tiicks from axes
 set(handles.axes_img,'xtick',[]);
@@ -151,7 +153,9 @@ setappdata(handles.figure_nanoxim,'vid_dim',...
 setappdata(handles.figure_nanoxim,'vid_handle',v);
 
 % show FIrst Image
-image(readFrame(v), 'Parent', handles.axes_img);
+imshow(readFrame(v), 'Parent', handles.axes_img);
+
+set(handles.text_img,'String', sprintf('Input: %.fx%.f',v.Height,v.Width)); 
 
 % Initialize sliders to correc tange
 gui_UpdateSliderMax(handles,v.Duration * v.FrameRate)
@@ -206,8 +210,11 @@ save([temp_data_path '/nanoxim_gui.mat'],'-struct','st');
 
 
 % Get list of movies
-mv_list = dir([browse_path '/*.avi']);
-set(handles.listbox_mv_names,'String',{mv_list(:).name});
+mv_list = dir([browse_path '/*.*']);
+mv_names = {mv_list(:).name};
+bv = cellfun(@(x) ~isempty(regexpi(x,'(\.mov)|(\.avi)','once')),mv_names);
+set(handles.listbox_mv_names,'String',mv_names(bv)');
+% keyboard
 
 
 % --- Executes on button press in pushbutton_calculate.
@@ -224,28 +231,41 @@ for_frame_range = [handles.rslider_for.getLowValue() handles.rslider_for.HighVal
 vid_handle = getappdata(handles.figure_nanoxim,'vid_handle');
 
 
-[ratio_img bw_pix_pass] = nanoxim_CalculateRatiomImage(vid_handle, ...
+[ratio_img, bw_pix_pass] = nanoxim_CalculateRatiomImage(vid_handle, ...
     bck_frame_range, for_frame_range);
 setappdata(handles.figure_nanoxim,'ratio_img',ratio_img);
 setappdata(handles.figure_nanoxim,'bw_pix_pass',bw_pix_pass);
 
 % Update image controls (slider max/min)
-ratio_img(~bw_pix_pass)=NaN;
+% ratio_img(~bw_pix_pass)=NaN;
 h=imshow(ratio_img,'Parent',handles.axes_ratiom);
-colormap(handles.axes_ratiom, jet);
 set(h,'AlphaData',bw_pix_pass)
-colorbar(handles.axes_ratiom);
- 
-% img = getframe(handles.axes_ratiom);
+caxis(handles.axes_ratiom,[min(ratio_img(bw_pix_pass)) max(ratio_img(bw_pix_pass))]);
+[min(ratio_img(bw_pix_pass)) max(ratio_img(bw_pix_pass))]
+colormap(handles.axes_ratiom, jet);
 
-% img.cdata(cat(3,bw_pix_pass,bw_pix_pas s,bw_pix_pass))=1;
-% hold on
-% imshow(img.cdata)
-% hold off
- 
-% figure;imshow(img.cdata)
-keyboard
- 
+colorbar(handles.axes_ratiom);
+% Set Limits of colormap
+
+
+gui_UpdateRatioSlider(handles)
+
+bw_ratoim_roi = getappdata(handles.figure_nanoxim,'bw_ratoim_roi');
+if isempty(bw_ratoim_roi)
+    bw_ratoim_roi = true(size(ratio_img));
+end
+% keyboard
+bw_roi_pix_pass = bw_pix_pass & bw_ratoim_roi;
+out_str = sprintf('Output: %0.4f Pixels Used, RatioM: %.3f +- %.3f',...
+    sum(bw_pix_pass(:))./numel(bw_pix_pass),...
+    mean(ratio_img(bw_roi_pix_pass)),std(ratio_img(bw_roi_pix_pass)));
+
+% Display output
+set(handles.text_ratiom_output,'String',out_str);
+dprintf(out_str);
+
+% keyboard
+  
 % keyboard
 
 % --- Executes on slider movement
@@ -268,3 +288,26 @@ function slider_ratiom_range_CreateFcn(hObject, eventdata, handles)
 if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
+
+
+% --- Executes on button press in pushbutton_save_metadata.
+function pushbutton_save_metadata_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_save_metadata (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in pushbutton_add_roi.
+function pushbutton_add_roi_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_add_roi (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+impoly(handles.axes_ratiom)
+
+
+% --- Executes on button press in pushbutton_show_roi.
+function pushbutton_show_roi_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_show_roi (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
