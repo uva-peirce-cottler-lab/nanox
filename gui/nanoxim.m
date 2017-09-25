@@ -67,13 +67,6 @@ pos = get(handles.uipanel_ratiom,'position');
 [handles.rslider_ratiom_hcomp, handles.rslider_ratiom_hcont, handles.rslider_ratiom] = ...
     gui_RangeSlider([0 100],[pos(1)+pos(3) pos(2) 40 pos(4)],'RAT','vertical',handles);
 
-
-% Remove tiicks from axes
-set(handles.axes_img,'xtick',[]);
-set(handles.axes_img,'xticklabel',[]);
-set(handles.axes_img,'ytick',[]);
-set(handles.axes_img,'yticklabel',[]);
-
 % Update handles structure
 guidata(hObject, handles);
 
@@ -84,6 +77,12 @@ guidata(hObject, handles);
 
 hListener = addlistener(handles.slider_frame_ind,'ContinuousValueChange',@slider_frame_ind_Callback);
 setappdata(handles.slider_frame_ind,'sliderListener',hListener)
+
+% Add default colorbar
+cmap = colormap(handles.axes_ratiom, jet);
+% cmap = colorbar(handles.axes_ratiom);
+cmap = colormap(handles.axes_ratiom);
+colormap(handles.axes_ratiom, vertcat([0 0 0], cmap));
 
 % UIWAIT makes nanoxim wait for user response (see UIRESUME)
 % uiwait(handles.figure_nanoxim);

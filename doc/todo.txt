@@ -1,2 +1,7 @@
 
-image display black
+Switch to seperate heatmat in diff axes
+no more hold on craziness for image display
+
+ADjust settings for pix pass and blur radius
+
+Save figure
