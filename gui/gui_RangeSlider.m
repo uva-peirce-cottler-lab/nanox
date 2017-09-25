@@ -38,7 +38,7 @@ function [hcomponent, hcontainer, rangeSlider] = gui_RangeSlider(val_range,...
         minField.setText(num2str(rangeSlider.getLowValue()));
         maxField.setText(num2str(rangeSlider.getHighValue()));
         if strcmp(label,'RAT')
-            gui_UpdateRatiomImage(rangeSlider, 'callback', handles)
+            gui_UpdateRatiomImage(handles)
         end
     end
 

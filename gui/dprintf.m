@@ -1,5 +1,5 @@
 function dprintf(str)
 
-fprintf(str);
+fprintf('%s\n',str);
 
 end

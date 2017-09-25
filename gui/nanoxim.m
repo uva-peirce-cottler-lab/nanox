@@ -22,7 +22,7 @@ function varargout = nanoxim(varargin)
 
 % Edit the above text to modify the response to help nanoxim
 
-% Last Modified by GUIDE v2.5 25-Sep-2017 11:06:53
+% Last Modified by GUIDE v2.5 25-Sep-2017 14:56:57
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -236,37 +236,12 @@ vid_handle = getappdata(handles.figure_nanoxim,'vid_handle');
 setappdata(handles.figure_nanoxim,'ratio_img',ratio_img);
 setappdata(handles.figure_nanoxim,'bw_pix_pass',bw_pix_pass);
 
-% Update image controls (slider max/min)
-% ratio_img(~bw_pix_pass)=NaN;
-h=imshow(ratio_img,'Parent',handles.axes_ratiom);
-set(h,'AlphaData',bw_pix_pass)
-caxis(handles.axes_ratiom,[min(ratio_img(bw_pix_pass)) max(ratio_img(bw_pix_pass))]);
-[min(ratio_img(bw_pix_pass)) max(ratio_img(bw_pix_pass))]
-colormap(handles.axes_ratiom, jet);
-
-colorbar(handles.axes_ratiom);
-% Set Limits of colormap
+gui_UpdateRatiomImage(handles);
 
 
-gui_UpdateRatioSlider(handles)
+gui_UpdateRatioSlider(handles);
 
-bw_ratoim_roi = getappdata(handles.figure_nanoxim,'bw_ratoim_roi');
-if isempty(bw_ratoim_roi)
-    bw_ratoim_roi = true(size(ratio_img));
-end
-% keyboard
-bw_roi_pix_pass = bw_pix_pass & bw_ratoim_roi;
-out_str = sprintf('Output: %0.4f Pixels Used, RatioM: %.3f +- %.3f',...
-    sum(bw_pix_pass(:))./numel(bw_pix_pass),...
-    mean(ratio_img(bw_roi_pix_pass)),std(ratio_img(bw_roi_pix_pass)));
 
-% Display output
-set(handles.text_ratiom_output,'String',out_str);
-dprintf(out_str);
-
-% keyboard
-  
-% keyboard
 
 % --- Executes on slider movement
 function slider_ratiom_range_Callback(hObject, eventdata, handles)
@@ -303,7 +278,24 @@ function pushbutton_add_roi_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-impoly(handles.axes_ratiom)
+% keyboard
+if strcmp(get(hObject,'String'),'Add ROI')
+    poly_ratiom_for_roi = impoly(handles.axes_ratiom);
+    setappdata(handles.figure_nanoxim,'vert_ratiom_for_roi',...
+        poly_ratiom_for_roi.getPosition);
+    bw_ratiom_for_roi = poly_ratiom_for_roi.createMask();
+    setappdata(handles.figure_nanoxim,'bw_ratiom_for_roi',...
+        bw_ratiom_for_roi);
+    delete(poly_ratiom_for_roi);
+else % Delete ROI
+    handle_ratiom_for_roi = getappdata(handles.figure_nanoxim, 'handle_ratiom_for_roi');
+    try delete(handle_ratiom_for_roi); catch; fprintf('Handle DNE\n'); end
+    setappdata(handles.figure_nanoxim,'vert_ratiom_for_roi', []);
+     setappdata(handles.figure_nanoxim,'bw_ratiom_for_roi', []);
+    setappdata(handles.figure_nanoxim, 'handle_ratiom_for_roi',[]);
+    set(handles.pushbutton_add_roi,'String','Add ROI');
+    set(handles.pushbutton_show_roi,'String','Show ROI');
+end
 
 
 % --- Executes on button press in pushbutton_show_roi.
@@ -311,3 +303,18 @@ function pushbutton_show_roi_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton_show_roi (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+vert_ratiom_for_roi = getappdata(handles.figure_nanoxim,'vert_ratiom_for_roi');
+
+if isempty(vert_ratiom_for_roi); return; end
+
+if strcmp(get(hObject,'String'),'Show ROI')
+    handle_ratiom_for_roi= impoly(handles.axes_ratiom, vert_ratiom_for_roi);
+    setappdata(handles.figure_nanoxim, 'handle_ratiom_for_roi',handle_ratiom_for_roi);
+    set(handles.pushbutton_add_roi,'String','Delete ROI');
+    set(handles.pushbutton_show_roi,'String','Hide ROI');
+else % Hide ROI
+    handle_ratiom_for_roi = getappdata(handles.figure_nanoxim, 'handle_ratiom_for_roi');
+    try delete(handle_ratiom_for_roi); catch; fprintf('Handle DNE\n'); end
+    set(handles.pushbutton_add_roi,'String','Add ROI');
+    set(handles.pushbutton_show_roi,'String','Show ROI');
+end
