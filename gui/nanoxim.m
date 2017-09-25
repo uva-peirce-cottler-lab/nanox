@@ -222,6 +222,7 @@ function pushbutton_calculate_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton_calculate (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+dprintf('Claculating Ratiometric Image');
 
 % Get background range
 bck_frame_range = [handles.rslider_bck.getLowValue() handles.rslider_bck.HighValue()];
@@ -236,10 +237,12 @@ vid_handle = getappdata(handles.figure_nanoxim,'vid_handle');
 setappdata(handles.figure_nanoxim,'ratio_img',ratio_img);
 setappdata(handles.figure_nanoxim,'bw_pix_pass',bw_pix_pass);
 
+% keyboard
+gui_UpdateRatioSlider(handles);
 gui_UpdateRatiomImage(handles);
 
 
-gui_UpdateRatioSlider(handles);
+
 
 
 
@@ -283,7 +286,8 @@ if strcmp(get(hObject,'String'),'Add ROI')
     poly_ratiom_for_roi = impoly(handles.axes_ratiom);
     setappdata(handles.figure_nanoxim,'vert_ratiom_for_roi',...
         poly_ratiom_for_roi.getPosition);
-    bw_ratiom_for_roi = poly_ratiom_for_roi.createMask();
+    bw_ratiom_for_roi = imresize(poly_ratiom_for_roi.createMask(),...
+        size(getappdata(handles.figure_nanoxim, 'ratio_img')));
     setappdata(handles.figure_nanoxim,'bw_ratiom_for_roi',...
         bw_ratiom_for_roi);
     delete(poly_ratiom_for_roi);
@@ -296,6 +300,8 @@ else % Delete ROI
     set(handles.pushbutton_add_roi,'String','Add ROI');
     set(handles.pushbutton_show_roi,'String','Show ROI');
 end
+
+gui_UpdateRatiomImage(handles);
 
 
 % --- Executes on button press in pushbutton_show_roi.
@@ -317,4 +323,6 @@ else % Hide ROI
     try delete(handle_ratiom_for_roi); catch; fprintf('Handle DNE\n'); end
     set(handles.pushbutton_add_roi,'String','Add ROI');
     set(handles.pushbutton_show_roi,'String','Show ROI');
+    
 end
+gui_UpdateRatiomImage(handles);

@@ -2,8 +2,8 @@ function gui_UpdateRatioSlider(handles)
 
 ratio_img = getappdata(handles.figure_nanoxim,'ratio_img');
 bw_pix_pass = getappdata(handles.figure_nanoxim,'bw_pix_pass');
-
-caxis([min(ratio_img(bw_pix_pass)) max(ratio_img(bw_pix_pass))]);
+% 
+% caxis([min(ratio_img(bw_pix_pass)) max(ratio_img(bw_pix_pass))]);
 
 max_val = max(ratio_img(bw_pix_pass));
 

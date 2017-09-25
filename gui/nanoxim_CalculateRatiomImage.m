@@ -12,7 +12,7 @@ bck_zimg = zeros(vid_handle.Height,vid_handle.Width,3,abs(diff(bck_frame_range))
 for t=1:abs(diff(bck_frame_range))
     bck_zimg(:,:,:,t)=readFrame(vid_handle);
 end
-bck_img = imfilter(max(bck_zimg,[],4),fspecial('gaussian',50, 10*4096));
+bck_img = imfilter(max(bck_zimg,[],4),fspecial('gaussian',blur_rad_pix, 10*4096));
 
 
 % Background image: Locate first frame,load specififed frames after
@@ -21,7 +21,7 @@ for_zimg = zeros(vid_handle.Height,vid_handle.Width,3,abs(diff(for_frame_range))
 for t=1:abs(diff(for_frame_range))
     for_zimg(:,:,:,t)=readFrame(vid_handle);
 end
-for_img = imfilter(max(for_zimg,[],4),fspecial('gaussian',50, 10*4096));
+for_img = imfilter(max(for_zimg,[],4),fspecial('gaussian',blur_rad_pix, 10*4096));
 
 % background subtraction 
 bs_blue = for_img(:,:,3) - bck_img(:,:,3);
