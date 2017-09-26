@@ -22,7 +22,7 @@ function varargout = nanoxim(varargin)
 
 % Edit the above text to modify the response to help nanoxim
 
-% Last Modified by GUIDE v2.5 25-Sep-2017 14:56:57
+% Last Modified by GUIDE v2.5 25-Sep-2017 22:23:36
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -70,19 +70,11 @@ pos = get(handles.uipanel_ratiom,'position');
 % Update handles structure
 guidata(hObject, handles);
 
-% set(handles.figure_nanoxim,'Visible','on')
-% Add a hold down value change callback to slider.
-% jScrollBar = findjobj('property',{'Name','slider_frame_ind'});
-% jScrollBar.AdjustmentValueChangedCallback = {@slider_frame_ind_Callback, handles};
-
+% Add continuous callback for video index slider
 hListener = addlistener(handles.slider_frame_ind,'ContinuousValueChange',@slider_frame_ind_Callback);
 setappdata(handles.slider_frame_ind,'sliderListener',hListener)
 
-% Add default colorbar
-cmap = colormap(handles.axes_ratiom, jet);
-% cmap = colorbar(handles.axes_ratiom);
-cmap = colormap(handles.axes_ratiom);
-colormap(handles.axes_ratiom, vertcat([0 0 0], cmap));
+
 
 % UIWAIT makes nanoxim wait for user response (see UIRESUME)
 % uiwait(handles.figure_nanoxim);
@@ -230,15 +222,20 @@ for_frame_range = [handles.rslider_for.getLowValue() handles.rslider_for.HighVal
 % Load background video
 vid_handle = getappdata(handles.figure_nanoxim,'vid_handle');
 
+blur_rad = str2double(get(handles.edit_blur_rad,'String'));
+
+rgb_thresh = [str2double(get(handles.edit_red_threshold,'String')) 0 ...
+    str2double(get(handles.edit_blue_threshold,'String'))];
+
 
 [ratio_img, bw_pix_pass] = nanoxim_CalculateRatiomImage(vid_handle, ...
-    bck_frame_range, for_frame_range);
+    bck_frame_range, for_frame_range, rgb_thresh, blur_rad);
 setappdata(handles.figure_nanoxim,'ratio_img',ratio_img);
 setappdata(handles.figure_nanoxim,'bw_pix_pass',bw_pix_pass);
 
 % keyboard
 gui_UpdateRatioSlider(handles);
-gui_UpdateRatiomImage(handles);
+gui_UpdateRatiomImage(handles.axes_ratiom,handles);
 
 
 
@@ -300,7 +297,7 @@ else % Delete ROI
     set(handles.pushbutton_show_roi,'String','Show ROI');
 end
 
-gui_UpdateRatiomImage(handles);
+gui_UpdateRatiomImage(handles.axes_ratiom, handles);
 
 
 % --- Executes on button press in pushbutton_show_roi.
@@ -324,4 +321,90 @@ else % Hide ROI
     set(handles.pushbutton_show_roi,'String','Show ROI');
     
 end
-gui_UpdateRatiomImage(handles);
+gui_UpdateRatiomImage(handles.axes_ratiom,handles);
+
+
+% --- Executes on button press in pushbutton_save_ratiom.
+function pushbutton_save_ratiom_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_save_ratiom (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+current_mv_path = getappdata(handles.figure_nanoxim, 'current_mv_path');
+% Get Image Name
+h=figure;
+ha = gca;
+gui_UpdateRatiomImage(ha, handles);
+saveas(ha,[current_mv_path '.png']);
+close(h);
+
+
+
+
+
+function edit_blur_rad_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_blur_rad (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_blur_rad as text
+%        str2double(get(hObject,'String')) returns contents of edit_blur_rad as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_blur_rad_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_blur_rad (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit_blue_threshold_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_blue_threshold (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_blue_threshold as text
+%        str2double(get(hObject,'String')) returns contents of edit_blue_threshold as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_blue_threshold_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_blue_threshold (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit_red_threshold_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_red_threshold (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_red_threshold as text
+%        str2double(get(hObject,'String')) returns contents of edit_red_threshold as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_red_threshold_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_red_threshold (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end

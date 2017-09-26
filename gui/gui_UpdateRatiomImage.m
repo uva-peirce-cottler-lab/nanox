@@ -1,8 +1,9 @@
-function gui_UpdateRatiomImage(handles)
+function gui_UpdateRatiomImage(target_handle, handles)
 dprintf('Updating Ratiometric Image');
 % keyboard 
 handles = guidata(handles.figure_nanoxim);
-  
+% target_handle = handles.axes_ratiom;
+
 % Get image
 ratio_img = getappdata(handles.figure_nanoxim,'ratio_img');
 
@@ -18,8 +19,9 @@ bw_pix_pass = getappdata(handles.figure_nanoxim,'bw_pix_pass');
 % ROI is union of ROI and pixpass
 bw_roi_pix_pass = bw_pix_pass & bw_ratiom_for_roi;
 
-
-% Set ingnored pixels to -.1 in ratio image
+% Initialize colormap jet and add black to base
+cmap = colormap(target_handle, jet);
+colormap(target_handle, vertcat([0 0 0], cmap));
 
 
 color_range = [handles.rslider_ratiom.getLowValue() ...
@@ -28,16 +30,16 @@ color_slice = abs(diff(color_range))./64;
 
 ratio_img_disp = ratio_img;
 ratio_img_disp(~bw_roi_pix_pass)=-10*color_slice;
-imshow(ratio_img_disp,'Parent',handles.axes_ratiom);
+imshow(ratio_img_disp,'Parent',target_handle);
 
 % Update caxis handles
-caxis(handles.axes_ratiom,color_range - [10*color_slice 0]);
+caxis(target_handle,color_range - [10*color_slice 0]);
 
-cmap = colormap(handles.axes_ratiom, jet);
-colormap(handles.axes_ratiom, vertcat([0 0 0], cmap));
+cmap = colormap(target_handle, jet);
+colormap(target_handle, vertcat([0 0 0], cmap));
 
 
-h=colorbar(handles.axes_ratiom);
+h=colorbar(target_handle);
 % Do not display bottom of color bar range
 ylim = get(h,'ylim');
 set(h,'ylim',[0 ylim(2)]);
