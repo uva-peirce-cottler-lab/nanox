@@ -2,7 +2,8 @@ function [hcomponent, hcontainer, rangeSlider] = gui_RangeSlider(val_range,...
     pos,label,orient,handles)
     % Add the 3rd Party Jar, should use static path but for the example, we
     % use dynamic
-    javaaddpath('C:\Users\bac\Documents\Repo nanoxim\gui\jide_demo.jnlp')
+    proj_path = getappdata(handles.figure_nanoxim,'proj_path');
+    javaaddpath([proj_path '\gui\jide_demo.jnlp']);
 
     import com.jidesoft.plaf.LookAndFeelFactory;
     import com.jidesoft.swing.JideButton;
