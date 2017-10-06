@@ -67,15 +67,31 @@ pos = get(handles.uipanel_ratiom,'position');
 [handles.rslider_ratiom_hcomp, handles.rslider_ratiom_hcont, handles.rslider_ratiom] = ...
     gui_RangeSlider([0 100],[pos(1)+pos(3) pos(2) 40 pos(4)],'RAT','vertical',handles);
 
-% Update handles structure
-guidata(hObject, handles);
-
 % Add continuous callback for video index slider
 hListener = addlistener(handles.slider_frame_ind,'ContinuousValueChange',@slider_frame_ind_Callback);
 setappdata(handles.slider_frame_ind,'sliderListener',hListener)
 
+%Initialize busy icon for calculations
+try
+    % R2010a and newer
+    iconsClassName = 'com.mathworks.widgets.BusyAffordance$AffordanceSize';
+    iconsSizeEnums = javaMethod('values',iconsClassName);
+    SIZE_32x32 = iconsSizeEnums(2);  % (1) = 16x16,  (2) = 32x32
+    jObj = com.mathworks.widgets.BusyAffordance(SIZE_32x32, '');  % icon, label
+catch
+    % R2009b and earlier
+    redColor   = java.awt.Color(1,0,0);
+    blackColor = java.awt.Color(0,0,0);
+    jObj = com.mathworks.widgets.BusyAffordance(redColor, blackColor);
+end
+jObj.setPaintsWhenStopped(true);  % default = false
+jObj.useWhiteDots(false);         % default = false (true is good for dark backgrounds)
+pos = get(handles.figure_nanoxim,'Position');
+javacomponent(jObj.getComponent, [pos(3)-32,pos(4)-32,32,32], handles.figure_nanoxim);
+handles.busy_spinner=jObj;
 
-
+% Update handles structure
+guidata(hObject, handles);
 % UIWAIT makes nanoxim wait for user response (see UIRESUME)
 % uiwait(handles.figure_nanoxim);
 
@@ -237,6 +253,9 @@ blur_rad_pix = str2double(get(handles.edit_blur_rad,'String'));
 rgb_thresh = [str2double(get(handles.edit_red_threshold,'String')) 0 ...
     str2double(get(handles.edit_blue_threshold,'String'))];
 % keyboard
+
+% Start busy spinner (calculations takes a while)
+handles.busy_spinner.start;
 if get(handles.radiobutton_video,'Value')==1
     % Get Background and Foreground Images
     bck_img = nanoxim_GetFrameRangeImg(vid_handle, bck_frame_range, blur_rad_pix);
@@ -252,8 +271,8 @@ end
     rgb_thresh);
 setappdata(handles.figure_nanoxim,'ratio_img',ratio_img);
 setappdata(handles.figure_nanoxim,'bw_pix_pass',bw_pix_pass);
-
-% keyboard
+% Stop Busy Spinner
+handles.busy_spinner.stop;
 
 % Update GUI
 gui_UpdateRatioSlider(handles);
