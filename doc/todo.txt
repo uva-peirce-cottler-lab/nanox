@@ -1,10 +1,16 @@
 High Priority:
-Reposition max min boxes on vertical slider
-Manually set max value of ratiom higher
-Do no autocalculate when new vide loaded
+
+
 Show average pixle value across frames
-Speed up movie frame loading with slider
 
 Low Priority:
 Image alignment between background and forground
+
+Bugs:
+Do no autocalculate when new vide loaded
+Speed up movie frame loading with slider
+
+DONE*** Reposition max min boxes on vertical slider
+
+
 

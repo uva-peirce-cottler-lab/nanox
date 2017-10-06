@@ -22,7 +22,7 @@ function varargout = nanoxim(varargin)
 
 % Edit the above text to modify the response to help nanoxim
 
-% Last Modified by GUIDE v2.5 05-Oct-2017 15:35:29
+% Last Modified by GUIDE v2.5 06-Oct-2017 12:40:21
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -58,14 +58,17 @@ handles.output = hObject;
 % Create a background range slider 
 pos = get(handles.slider_frame_ind,'position');
 [handles.rslider_bck_hcomp, handles.rslider_bck_hcont, handles.rslider_bck] = ...
-    gui_RangeSlider([1 100],[pos(1) pos(2)-45 pos(3) 40],'BCK','horizontal',handles);
+    gui_RangeSlider([1 100],[pos(1) pos(2)-45 pos(3) 40],'BCK','horizontal',...
+    handles.edit_bck_low,handles.edit_bck_high, handles);
 % Create a forground range slider 
 [handles.rslider_for_hcomp, handles.rslider_for_hcont, handles.rslider_for] = ...
-    gui_RangeSlider([1 100],[pos(1) pos(2)-85 pos(3) 40],'FOR','horizontal',handles);
+    gui_RangeSlider([1 100],[pos(1) pos(2)-85 pos(3) 40],'FOR','horizontal',...
+    handles.edit_for_low, handles.edit_for_high, handles);
 % Ratiometrix threshold slider
 pos = get(handles.uipanel_ratiom,'position');
 [handles.rslider_ratiom_hcomp, handles.rslider_ratiom_hcont, handles.rslider_ratiom] = ...
-    gui_RangeSlider([0 100],[pos(1)+pos(3) pos(2) 40 pos(4)],'RAT','vertical',handles);
+    gui_RangeSlider([0 100],[pos(1)+pos(3) pos(2) 45 pos(4)-50],'RAT','vertical',...
+    handles.edit_ratiom_low, handles.edit_ratiom_high, handles);
 
 % Add continuous callback for video index slider
 hListener = addlistener(handles.slider_frame_ind,'ContinuousValueChange',@slider_frame_ind_Callback);
@@ -551,6 +554,170 @@ function edit_for_img_path_Callback(hObject, eventdata, handles)
 % --- Executes during object creation, after setting all properties.
 function edit_for_img_path_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to edit_for_img_path (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit_bck_low_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_bck_low (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_bck_low as text
+%        str2double(get(hObject,'String')) returns contents of edit_bck_low as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_bck_low_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_bck_low (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit_bck_high_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_bck_high (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_bck_high as text
+%        str2double(get(hObject,'String')) returns contents of edit_bck_high as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_bck_high_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_bck_high (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit_for_low_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_for_low (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_for_low as text
+%        str2double(get(hObject,'String')) returns contents of edit_for_low as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_for_low_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_for_low (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit_for_high_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_for_high (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_for_high as text
+%        str2double(get(hObject,'String')) returns contents of edit_for_high as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_for_high_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_for_high (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit_ratiom_max_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_ratiom_max (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+val = str2double(get(hObject,'String'));
+handles.handles.rslider_ratiom.setMaximum(val);
+
+% Hints: get(hObject,'String') returns contents of edit_ratiom_max as text
+%        str2double(get(hObject,'String')) returns contents of edit_ratiom_max as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_ratiom_max_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_ratiom_max (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit_ratiom_high_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_ratiom_high (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_ratiom_high as text
+%        str2double(get(hObject,'String')) returns contents of edit_ratiom_high as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_ratiom_high_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_ratiom_high (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit_ratiom_low_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_ratiom_low (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_ratiom_low as text
+%        str2double(get(hObject,'String')) returns contents of edit_ratiom_low as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_ratiom_low_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_ratiom_low (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 

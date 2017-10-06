@@ -1,5 +1,5 @@
 function [hcomponent, hcontainer, rangeSlider] = gui_RangeSlider(val_range,...
-    pos,label,orient,handles)
+    pos,label,orient,min_textbox, max_textbox,handles)
     % Add the 3rd Party Jar, should use static path but for the example, we
     % use dynamic
     proj_path = getappdata(handles.figure_nanoxim,'proj_path');
@@ -18,13 +18,6 @@ function [hcomponent, hcontainer, rangeSlider] = gui_RangeSlider(val_range,...
     import java.awt.event.ItemEvent;
     import java.awt.event.ItemListener;
 
-    labelField = JTextField();
-    minField = JTextField();
-    maxField = JTextField();
-    SelectAllUtils.install(labelField);
-    SelectAllUtils.install(minField);
-    SelectAllUtils.install(maxField);
-
     rangeSlider = RangeSlider(val_range(1), val_range(2), ...
         val_range(1), val_range(2));
     rangeSlider.setOrientation(~strcmp(orient,'horizontal'));
@@ -35,47 +28,28 @@ function [hcomponent, hcontainer, rangeSlider] = gui_RangeSlider(val_range,...
     rangeSlider.setMajorTickSpacing(50);
     rangeSlider = handle(rangeSlider, 'CallbackProperties');
 
-    function updateValues(~, ~)
-        minField.setText(num2str(rangeSlider.getLowValue()));
-        maxField.setText(num2str(rangeSlider.getHighValue()));
+    
+    set(min_textbox,'String',num2str(val_range(1)));
+    set(max_textbox,'String',num2str(val_range(2)));
+    
+    function updateTextValues(~, ~)
+        set(min_textbox, 'String',num2str(rangeSlider.getLowValue()));
+        set(max_textbox, 'String',num2str(rangeSlider.getHighValue()));
+
         if strcmp(label,'RAT')
             gui_UpdateRatiomImage(handles.axes_ratiom,handles)
         end
     end
 
-    rangeSlider.StateChangedCallback = @updateValues;
-
-    minField.setText(num2str(rangeSlider.getLowValue()));
-    maxField.setText(num2str(rangeSlider.getHighValue()));
-
-    % Min and max panels
-    minPanel = JPanel(BorderLayout());
-    minField.setEditable(false);
-    minPanel.add(minField);
-    
-    maxPanel = JPanel(BorderLayout());
-    maxField.setEditable(false);
-    maxPanel.add(maxField);
-
-    if strcmp(orient,'horizontal')
-        textFieldPanel = JPanel(GridLayout(1, 3));
-    else
-        textFieldPanel = JPanel(GridLayout(3, 1));
-    end
-    
-    
-    textFieldPanel.add(JLabel(label));
-    textFieldPanel.add(minPanel);
-    textFieldPanel.add(maxPanel);
-
+    rangeSlider.StateChangedCallback = @updateTextValues;
     
     panel = JPanel(BorderLayout());
     if strcmp(orient,'horizontal')
         panel.add(rangeSlider, BorderLayout.CENTER);
-        panel.add(textFieldPanel, BorderLayout.WEST);
+%         panel.add(textFieldPanel, BorderLayout.WEST);
     else
         panel.add(rangeSlider, BorderLayout.CENTER);
-        panel.add(textFieldPanel, BorderLayout.NORTH);
+%         panel.add(textFieldPanel, BorderLayout.NORTH);
     end
     
     % hcontainer can be used to interact with panel like uicontrol
