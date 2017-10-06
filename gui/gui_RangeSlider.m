@@ -32,7 +32,7 @@ function [hcomponent, hcontainer, rangeSlider] = gui_RangeSlider(val_range,...
     rangeSlider.setPaintLabels(true);
     rangeSlider.setPaintTrack(true);
     rangeSlider.setRangeDraggable(false);
-    rangeSlider.setMajorTickSpacing(20);
+    rangeSlider.setMajorTickSpacing(50);
     rangeSlider = handle(rangeSlider, 'CallbackProperties');
 
     function updateValues(~, ~)

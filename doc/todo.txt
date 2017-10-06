@@ -1,1 +1,15 @@
 Add support for pairs if images instead of videos
+Image alignment between background and forground
+Manually set max value of ratiom higher
+Add busy animation
+
+
+do no autocalculate when new vide loaded
+show average pixle value across frames
+
+DONE** Fix tic marks on bck and for range sliders
+DONE*** save average of video frame for background and foregound
+Done*** Clear ROI and rest of GUI on load video
+DONE*** option to use 2 images instead of frames from a movie
+DONE*** export single frame and a series of frames
+

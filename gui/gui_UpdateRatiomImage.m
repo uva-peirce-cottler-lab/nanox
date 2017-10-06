@@ -6,7 +6,8 @@ handles = guidata(handles.figure_nanoxim);
 
 % Get image
 ratio_img = getappdata(handles.figure_nanoxim,'ratio_img');
-
+if isempty(ratio_img); return; end
+ 
 % Get ROI mask
 bw_ratiom_for_roi = getappdata(handles.figure_nanoxim,'bw_ratiom_for_roi');
 if isempty(bw_ratiom_for_roi)

@@ -1,23 +1,6 @@
-function [ratio_img, bw_pixpass] = nanoxim_CalculateRatiomImage(vid_handle, ...
-    bck_frame_range, for_frame_range,rgb_sig_thresh,blur_rad_pix)
+function [ratio_img, bw_pixpass] = nanoxim_CalculateRatiomImage(bck_img, ...
+    for_img,rgb_sig_thresh)
 
-
-% Background image: Locate first frame,load specififed frames after
-vid_handle.CurrentTime=(bck_frame_range(1)-1)/vid_handle.FrameRate;
-bck_zimg = zeros(vid_handle.Height,vid_handle.Width,3,abs(diff(bck_frame_range))+1,'uint16');
-for t=1:abs(diff(bck_frame_range))
-    bck_zimg(:,:,:,t)=readFrame(vid_handle);
-end
-bck_img = imfilter(max(bck_zimg,[],4),fspecial('gaussian',blur_rad_pix, 10*4096),'symmetric');
-
-
-% Background image: Locate first frame,load specififed frames after
-vid_handle.CurrentTime=(for_frame_range(1)-1)/vid_handle.FrameRate;
-for_zimg = zeros(vid_handle.Height,vid_handle.Width,3,abs(diff(for_frame_range))+1,'uint16');
-for t=1:abs(diff(for_frame_range))
-    for_zimg(:,:,:,t)=readFrame(vid_handle);
-end
-for_img = imfilter(max(for_zimg,[],4),fspecial('gaussian',blur_rad_pix, 10*4096),'symmetric');
 
 % background subtraction 
 bs_blue = for_img(:,:,3) - bck_img(:,:,3);

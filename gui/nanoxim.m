@@ -22,7 +22,7 @@ function varargout = nanoxim(varargin)
 
 % Edit the above text to modify the response to help nanoxim
 
-% Last Modified by GUIDE v2.5 25-Sep-2017 22:23:36
+% Last Modified by GUIDE v2.5 05-Oct-2017 15:35:29
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -60,7 +60,7 @@ pos = get(handles.slider_frame_ind,'position');
 [handles.rslider_bck_hcomp, handles.rslider_bck_hcont, handles.rslider_bck] = ...
     gui_RangeSlider([1 100],[pos(1) pos(2)-45 pos(3) 40],'BCK','horizontal',handles);
 % Create a forground range slider 
-[handles.rslider_bck_hcomp, handles.rslider_bck_hcont, handles.rslider_for] = ...
+[handles.rslider_for_hcomp, handles.rslider_for_hcont, handles.rslider_for] = ...
     gui_RangeSlider([1 100],[pos(1) pos(2)-85 pos(3) 40],'FOR','horizontal',handles);
 % Ratiometrix threshold slider
 pos = get(handles.uipanel_ratiom,'position');
@@ -105,9 +105,10 @@ vid_handle = getappdata(handles.figure_nanoxim,'vid_handle');
 slider_val = get(handles.slider_frame_ind,'Value');
 vid_handle.CurrentTime=(slider_val-1)/vid_handle.FrameRate;
 img=readFrame(vid_handle);
-
-set(handles.text_frame_ind,'String',sprintf('%0.f',slider_val));
+% Update image in axes and image in memory
+setappdata(handles.figure_nanoxim, 'current_frame',img);
 imshow(img,'Parent',handles.axes_img);
+set(handles.text_frame_ind,'String',sprintf('%0.f',slider_val));
 % keyboard  
 
 
@@ -128,13 +129,16 @@ function pushbutton_load_video_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton_load_video (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+nanoxim_ResetGUI(handles);
+
 browse_path = getappdata(handles.figure_nanoxim,'browse_path');
 
 % Get list of movies
 mv_list = get(handles.listbox_mv_names,'String');
 
 current_mv_path = [browse_path '/' mv_list{get(handles.listbox_mv_names,'Value')}];
-setappdata(handles.figure_nanoxim,'current_mv_path',current_mv_path);
+setappdata(handles.figure_nanoxim, 'current_mv_path',current_mv_path);
+setappdata(handles.figure_nanoxim, 'current_mv_name',mv_list{get(handles.listbox_mv_names,'Value')});
 
 % read video
 v = VideoReader(current_mv_path);
@@ -143,8 +147,10 @@ setappdata(handles.figure_nanoxim,'vid_dim',...
     [v.Height,v.Width,3,v.Duration * v.FrameRate]);
 setappdata(handles.figure_nanoxim,'vid_handle',v);
 
-% show FIrst Image
-imshow(readFrame(v), 'Parent', handles.axes_img);
+% Show First Image
+img = readFrame(v);
+imshow(img, 'Parent', handles.axes_img);
+setappdata(handles.figure_nanoxim, 'current_frame',img);
 
 set(handles.text_img,'String', sprintf('Input: %.fx%.f',v.Height,v.Width)); 
 
@@ -179,9 +185,11 @@ function pushbutton_browse_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton_browse (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+nanoxim_ResetGUI(handles);
 
 browse_path = pwd;
-% If previous browse path is saved to disk, load and use that
+% If previous browse path is saved to disk, load and use that so user
+% doesn't have to browse from active directory
 temp_data_path = getappdata(0, 'temp_data_path');
 if ~isempty(dir([temp_data_path '/nanoxim_gui.mat']))
     st = load([temp_data_path '/nanoxim_gui.mat']);
@@ -191,6 +199,7 @@ if ~isempty(dir([temp_data_path '/nanoxim_gui.mat']))
 else; st=struct();
 end
 % keyboard
+
 browse_path = uigetdir(browse_path,'Select Movie Folder');
 if browse_path==0; return; end
 
@@ -203,8 +212,9 @@ save([temp_data_path '/nanoxim_gui.mat'],'-struct','st');
 % Get list of movies
 mv_list = dir([browse_path '/*.*']);
 mv_names = {mv_list(:).name};
-bv = cellfun(@(x) ~isempty(regexpi(x,'(\.mov)|(\.avi)','once')),mv_names);
+bv = cellfun(@(x) ~isempty(regexpi(x,'(\.mov$)|(\.avi$)|(\.mp4$)','once')),mv_names);
 set(handles.listbox_mv_names,'String',mv_names(bv)');
+% keyboard
 % keyboard
 
 
@@ -219,21 +229,33 @@ dprintf('Claculating Ratiometric Image');
 bck_frame_range = [handles.rslider_bck.getLowValue() handles.rslider_bck.HighValue()];
 for_frame_range = [handles.rslider_for.getLowValue() handles.rslider_for.HighValue()];
 
-% Load background video
+% Handle to load video frames
 vid_handle = getappdata(handles.figure_nanoxim,'vid_handle');
-
-blur_rad = str2double(get(handles.edit_blur_rad,'String'));
-
+% Degree of blurring for bck and for images
+blur_rad_pix = str2double(get(handles.edit_blur_rad,'String'));
+% Thresholds for min signal above background for each channel
 rgb_thresh = [str2double(get(handles.edit_red_threshold,'String')) 0 ...
     str2double(get(handles.edit_blue_threshold,'String'))];
-
-
-[ratio_img, bw_pix_pass] = nanoxim_CalculateRatiomImage(vid_handle, ...
-    bck_frame_range, for_frame_range, rgb_thresh, blur_rad);
+% keyboard
+if get(handles.radiobutton_video,'Value')==1
+    % Get Background and Foreground Images
+    bck_img = nanoxim_GetFrameRangeImg(vid_handle, bck_frame_range, blur_rad_pix);
+    for_img = nanoxim_GetFrameRangeImg(vid_handle, for_frame_range, blur_rad_pix);
+else
+    % Get Background and Foreground Images
+    bck_img = imread(getappdata(handles.figure_nanoxim, 'bck_img_path'));
+    for_img = imread(getappdata(handles.figure_nanoxim, 'for_img_path'));
+end
+% keyboard
+% Calculate ratiometric image
+[ratio_img, bw_pix_pass] = nanoxim_CalculateRatiomImage(bck_img,for_img, ...
+    rgb_thresh);
 setappdata(handles.figure_nanoxim,'ratio_img',ratio_img);
 setappdata(handles.figure_nanoxim,'bw_pix_pass',bw_pix_pass);
 
 % keyboard
+
+% Update GUI
 gui_UpdateRatioSlider(handles);
 gui_UpdateRatiomImage(handles.axes_ratiom,handles);
 
@@ -400,6 +422,116 @@ function edit_red_threshold_Callback(hObject, eventdata, handles)
 % --- Executes during object creation, after setting all properties.
 function edit_red_threshold_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to edit_red_threshold (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --------------------------------------------------------------------
+function menu_file_Callback(hObject, eventdata, handles)
+% hObject    handle to menu_file (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function menu2_export_frame_Callback(hObject, eventdata, handles)
+% hObject    handle to menu2_export_frame (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Get current Frame and path metadata
+img = getappdata(handles.figure_nanoxim, 'current_frame');
+current_mv_name = getappdata(handles.figure_nanoxim,'current_mv_name');
+browse_path = getappdata(handles.figure_nanoxim,'browse_path');
+proj_path = getappdata(0,'proj_path');
+% Get current frame index and include as default filename
+ind_str = sprintf('%.f',get(handles.slider_frame_ind,'Value'));
+cd(browse_path);
+[FileName,PathName,FilterIndex] = uiputfile('*.tif','Filename for Exported Frame',...
+    [current_mv_name '_frame_' ind_str '.tif']);
+cd(proj_path); 
+if FileName==0; return; end
+% Export frame
+imwrite(img, [PathName FileName],'tif');
+
+
+
+% --------------------------------------------------------------------
+function menu2_export_frame_ranges_Callback(hObject, eventdata, handles)
+% hObject    handle to menu2_export_frame_ranges (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+vid_handle = getappdata(handles.figure_nanoxim, 'vid_handle');
+% Get background range
+bck_frame_range = [handles.rslider_bck.getLowValue() handles.rslider_bck.HighValue()];
+for_frame_range = [handles.rslider_for.getLowValue() handles.rslider_for.HighValue()];
+blur_rad_pix = str2double(get(handles.edit_blur_rad,'String'));
+% Get Background and Foreground Images
+bck_img = im2uint8(nanoxim_GetFrameRangeImg(vid_handle, bck_frame_range, blur_rad_pix));
+for_img = im2uint8(nanoxim_GetFrameRangeImg(vid_handle, for_frame_range, blur_rad_pix));
+% Get path metadata
+browse_path = getappdata(handles.figure_nanoxim,'browse_path');
+current_mv_name = getappdata(handles.figure_nanoxim,'current_mv_name');
+
+imwrite(bck_img,[browse_path '/' current_mv_name '_bck_' ...
+    sprintf('%.f', bck_frame_range(1)) '_' sprintf('%.f', bck_frame_range(2)) '.tif'],'tif');
+imwrite(for_img,[browse_path '/' current_mv_name '_for_' ...
+    sprintf('%.f', for_frame_range(1)) '_' sprintf('%.f', for_frame_range(2)) '.tif'],'tif');
+
+dprintf('Exporting background and foreground images to movie folder');
+% keyboard
+
+
+
+% --- Executes on button press in pushbutton_bck_img_path.
+function pushbutton_bck_img_path_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_bck_img_path (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+% Get path metadata
+browse_path = getappdata(handles.figure_nanoxim,'browse_path');
+
+[FileName,PathName,FilterIndex] = uigetfile('*.tif','Select BCK Image',browse_path);
+if FileName==0; return; end
+bck_img_path = [PathName FileName];
+set(handles.edit_bck_img_path,'string',bck_img_path);
+setappdata(handles.figure_nanoxim, 'bck_img_path',bck_img_path); 
+
+
+% keyboard
+
+% --- Executes on button press in pushbutton_for_img_path.
+function pushbutton_for_img_path_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_for_img_path (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+browse_path = getappdata(handles.figure_nanoxim,'browse_path');
+
+[FileName,PathName,FilterIndex] = uigetfile('*.tif','Select FOR Image',browse_path);
+if FileName==0; return; end
+for_img_path = [PathName FileName];
+set(handles.edit_for_img_path,'string',for_img_path);
+setappdata(handles.figure_nanoxim, 'for_img_path',for_img_path); 
+
+
+function edit_for_img_path_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_for_img_path (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit_for_img_path as text
+%        str2double(get(hObject,'String')) returns contents of edit_for_img_path as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_for_img_path_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_for_img_path (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
