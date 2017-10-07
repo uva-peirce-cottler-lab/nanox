@@ -1,16 +1,12 @@
 High Priority:
 
-
-Show average pixle value across frames
-
 Low Priority:
 Image alignment between background and forground
 
 Bugs:
 Do no autocalculate when new vide loaded
-Speed up movie frame loading with slider
 
-DONE*** Reposition max min boxes on vertical slider
+
 
 
 

@@ -22,7 +22,7 @@ function varargout = nanoxim(varargin)
 
 % Edit the above text to modify the response to help nanoxim
 
-% Last Modified by GUIDE v2.5 06-Oct-2017 12:40:21
+% Last Modified by GUIDE v2.5 06-Oct-2017 19:24:45
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -93,6 +93,10 @@ pos = get(handles.figure_nanoxim,'Position');
 javacomponent(jObj.getComponent, [pos(3)-32,pos(4)-32,32,32], handles.figure_nanoxim);
 handles.busy_spinner=jObj;
 
+% Set colororder on RGB mean plot
+set(handles.axes_rgb_mean, 'ColorOrder', [1 0 0; 0 1 0; 0 0 1],...
+    'NextPlot', 'replacechildren');
+ beautifyAxis(handles.axes_rgb_mean);
 % Update handles structure
 guidata(hObject, handles);
 % UIWAIT makes nanoxim wait for user response (see UIRESUME)
@@ -121,14 +125,29 @@ function slider_frame_ind_Callback(hObject, eventdata, handles)
 handles = guidata(hObject);
 vid_handle = getappdata(handles.figure_nanoxim,'vid_handle');
 
-slider_val = get(handles.slider_frame_ind,'Value');
-vid_handle.CurrentTime=(slider_val-1)/vid_handle.FrameRate;
-img=readFrame(vid_handle);
+slider_val = round(get(handles.slider_frame_ind,'Value'));
+
+rgb_vid = getappdata(handles.figure_nanoxim,'rgb_vid');
+
+if isempty(rgb_vid)
+    vid_handle.CurrentTime=(slider_val-1)/vid_handle.FrameRate;
+    img=readFrame(vid_handle);
+else
+    img = rgb_vid(:,:,:,slider_val);
+end
 % Update image in axes and image in memory
 setappdata(handles.figure_nanoxim, 'current_frame',img);
 imshow(img,'Parent',handles.axes_img);
 set(handles.text_frame_ind,'String',sprintf('%0.f',slider_val));
-% keyboard  
+
+
+% Update RGB plot
+delete(getappdata(handles.figure_nanoxim,'frame_line_handle'));
+hold(handles.axes_rgb_mean,'on');
+frame_line_handle = plot([slider_val slider_val],ylim(handles.axes_rgb_mean),'k','Parent',handles.axes_rgb_mean);
+hold(handles.axes_rgb_mean,'off'); 
+setappdata(handles.figure_nanoxim,'frame_line_handle',frame_line_handle);
+
 
 
 % --- Executes during object creation, after setting all properties.
@@ -159,22 +178,55 @@ current_mv_path = [browse_path '/' mv_list{get(handles.listbox_mv_names,'Value')
 setappdata(handles.figure_nanoxim, 'current_mv_path',current_mv_path);
 setappdata(handles.figure_nanoxim, 'current_mv_name',mv_list{get(handles.listbox_mv_names,'Value')});
 
+
+% % keyboard
+
+
 % read video
-v = VideoReader(current_mv_path);
+vid_handle = VideoReader(current_mv_path);
+num_frames = ceil(vid_handle.Duration * vid_handle.FrameRate);
+% keyboard
+rgb_vid = zeros(vid_handle.Height,vid_handle.Width,3,num_frames,'uint8');
+% keyboard
+rgb_mean = zeros(num_frames,3);
+tic
+hw = waitbar(0,'Loading Video...');
+for t=1:num_frames
+    rgb_vid(:,:,:,t)=readFrame(vid_handle);
+%     keyboard
+    rgb_mean(t,1:3) = squeeze(mean(mean(rgb_vid(:,:,:,t),2),1));
+    waitbar(t/num_frames,hw);
+end
+close(hw);
+toc
+
 % Store video data
+setappdata(handles.figure_nanoxim,'rgb_vid',...
+    rgb_vid);
+setappdata(handles.figure_nanoxim,'rgb_mean',...
+    rgb_mean);
 setappdata(handles.figure_nanoxim,'vid_dim',...
-    [v.Height,v.Width,3,v.Duration * v.FrameRate]);
-setappdata(handles.figure_nanoxim,'vid_handle',v);
+    size(rgb_vid));
+setappdata(handles.figure_nanoxim,'vid_handle',vid_handle);
+setappdata(handles.figure_nanoxim,'vid_handle',vid_handle);
 
 % Show First Image
-img = readFrame(v);
-imshow(img, 'Parent', handles.axes_img);
-setappdata(handles.figure_nanoxim, 'current_frame',img);
+% img = readFrame(vid_handle);
+imshow(rgb_vid(:,:,:,1), 'Parent', handles.axes_img);
+setappdata(handles.figure_nanoxim, 'current_frame',rgb_vid(:,:,:,1));
+set(handles.text_img,'String', sprintf('Input: %.fx%.f',vid_handle.Height,vid_handle.Width)); 
 
-set(handles.text_img,'String', sprintf('Input: %.fx%.f',v.Height,v.Width)); 
+%Plot RGB means
+% keyboard
+plot(rgb_mean,'Parent',handles.axes_rgb_mean);
+hold(handles.axes_rgb_mean,'on'); 
+frame_line_handle = plot([1 1],ylim(handles.axes_rgb_mean),'k','Parent',handles.axes_rgb_mean); 
+hold(handles.axes_rgb_mean,'off'); 
+setappdata(handles.figure_nanoxim,'frame_line_handle',frame_line_handle);
+
 
 % Initialize sliders to correc tange
-gui_UpdateSliderMax(handles,v.Duration * v.FrameRate)
+gui_UpdateSliderMax(handles,vid_handle.Duration * vid_handle.FrameRate)
 
 % --- Executes on selection change in listbox_mv_names.
 function listbox_mv_names_Callback(hObject, eventdata, handles)
@@ -249,7 +301,10 @@ bck_frame_range = [handles.rslider_bck.getLowValue() handles.rslider_bck.HighVal
 for_frame_range = [handles.rslider_for.getLowValue() handles.rslider_for.HighValue()];
 
 % Handle to load video frames
-vid_handle = getappdata(handles.figure_nanoxim,'vid_handle');
+vid_obj = getappdata(handles.figure_nanoxim,'rgb_vid');
+if isempty(vid_obj)
+    vid_obj = getappdata(handles.figure_nanoxim,'vid_handle');
+end
 % Degree of blurring for bck and for images
 blur_rad_pix = str2double(get(handles.edit_blur_rad,'String'));
 % Thresholds for min signal above background for each channel
@@ -260,9 +315,10 @@ rgb_thresh = [str2double(get(handles.edit_red_threshold,'String')) 0 ...
 % Start busy spinner (calculations takes a while)
 handles.busy_spinner.start;
 if get(handles.radiobutton_video,'Value')==1
-    % Get Background and Foreground Images
-    bck_img = nanoxim_GetFrameRangeImg(vid_handle, bck_frame_range, blur_rad_pix);
-    for_img = nanoxim_GetFrameRangeImg(vid_handle, for_frame_range, blur_rad_pix);
+    % Get Background and Foreground Images from videos
+    
+    bck_img = nanoxim_GetFrameRangeImg(vid_obj, bck_frame_range, blur_rad_pix);
+    for_img = nanoxim_GetFrameRangeImg(vid_obj, for_frame_range, blur_rad_pix);
 else
     % Get Background and Foreground Images
     bck_img = imread(getappdata(handles.figure_nanoxim, 'bck_img_path'));
@@ -324,8 +380,12 @@ function pushbutton_add_roi_Callback(hObject, eventdata, handles)
 % keyboard
 if strcmp(get(hObject,'String'),'Add ROI')
     poly_ratiom_for_roi = impoly(handles.axes_ratiom);
+    try
     setappdata(handles.figure_nanoxim,'vert_ratiom_for_roi',...
         poly_ratiom_for_roi.getPosition);
+    catch ME
+        return;
+    end
     bw_ratiom_for_roi = imresize(poly_ratiom_for_roi.createMask(),...
         size(getappdata(handles.figure_nanoxim, 'ratio_img')));
     setappdata(handles.figure_nanoxim,'bw_ratiom_for_roi',...
@@ -663,7 +723,7 @@ function edit_ratiom_max_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 val = str2double(get(hObject,'String'));
-handles.handles.rslider_ratiom.setMaximum(val);
+handles.rslider_ratiom.setMaximum(val);
 
 % Hints: get(hObject,'String') returns contents of edit_ratiom_max as text
 %        str2double(get(hObject,'String')) returns contents of edit_ratiom_max as a double
@@ -726,3 +786,10 @@ function edit_ratiom_low_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes during object creation, after setting all properties.
+function pushbutton_load_video_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to pushbutton_load_video (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
