@@ -189,6 +189,8 @@ num_frames = ceil(vid_handle.Duration * vid_handle.FrameRate);
 rgb_vid = zeros(vid_handle.Height,vid_handle.Width,3,num_frames,'uint8');
 % keyboard
 rgb_mean = zeros(num_frames,3);
+
+handles.busy_spinner.start;
 tic
 hw = waitbar(0,'Loading Video...');
 for t=1:num_frames
@@ -199,6 +201,7 @@ for t=1:num_frames
 end
 close(hw);
 toc
+handles.busy_spinner.stop;
 
 % Store video data
 setappdata(handles.figure_nanoxim,'rgb_vid',...
