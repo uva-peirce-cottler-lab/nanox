@@ -12,6 +12,7 @@ end
 
 % Clear axes,
 cla(handles.axes_img);
+cla(handles.axes_rgb_mean);
 cla(handles.axes_ratiom);
 colorbar(handles.axes_ratiom,'off')
 

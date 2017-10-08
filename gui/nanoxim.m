@@ -220,7 +220,9 @@ setappdata(handles.figure_nanoxim, 'current_frame',rgb_vid(:,:,:,1));
 set(handles.text_img,'String', sprintf('Input: %.fx%.f',vid_handle.Height,vid_handle.Width)); 
 
 %Plot RGB means
-% keyboard
+set(handles.axes_rgb_mean, 'ColorOrder', [1 0 0; 0 1 0; 0 0 1],...
+    'NextPlot', 'replacechildren');
+ beautifyAxis(handles.axes_rgb_mean);
 plot(rgb_mean,'Parent',handles.axes_rgb_mean);
 hold(handles.axes_rgb_mean,'on'); 
 frame_line_handle = plot([1 1],ylim(handles.axes_rgb_mean),'k','Parent',handles.axes_rgb_mean); 
