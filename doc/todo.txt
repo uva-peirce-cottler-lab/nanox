@@ -3,6 +3,9 @@ High Priority:
 Low Priority:
 Image alignment between background and forground
 
+save ROI and other data and auto relaod
+
+
 Bugs:
 Do no autocalculate when new vide loaded
 

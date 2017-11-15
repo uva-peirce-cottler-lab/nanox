@@ -288,7 +288,7 @@ save([temp_data_path '/nanoxim_gui.mat'],'-struct','st');
 % Get list of movies
 mv_list = dir([browse_path '/*.*']);
 mv_names = {mv_list(:).name};
-bv = cellfun(@(x) ~isempty(regexpi(x,'(\.mov$)|(\.avi$)|(\.mp4$)','once')),mv_names);
+bv = cellfun(@(x) ~isempty(regexpi(x,'(\.mov$)|(\.avi$)|(\.mp4$)|(\.m4v$)','once')),mv_names);
 set(handles.listbox_mv_names,'String',mv_names(bv)');
 % keyboard
 % keyboard

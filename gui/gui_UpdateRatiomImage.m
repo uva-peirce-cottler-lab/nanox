@@ -20,6 +20,11 @@ bw_pix_pass = getappdata(handles.figure_nanoxim,'bw_pix_pass');
 % ROI is union of ROI and pixpass
 bw_roi_pix_pass = bw_pix_pass & bw_ratiom_for_roi;
 
+
+% Displaying a heatmap image with a color bar and black with excluded
+% pixels requires an extensive hack
+
+
 % Initialize colormap jet and add black to base
 cmap = colormap(target_handle, jet);
 colormap(target_handle, vertcat([0 0 0], cmap));
@@ -41,6 +46,7 @@ colormap(target_handle, vertcat([0 0 0], cmap));
 
 
 h=colorbar(target_handle);
+
 % Do not display bottom of color bar range
 ylim = get(h,'ylim');
 set(h,'ylim',[0 ylim(2)]);
