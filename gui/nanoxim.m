@@ -140,6 +140,10 @@ setappdata(handles.figure_nanoxim, 'current_frame',img);
 imshow(img,'Parent',handles.axes_img);
 set(handles.text_frame_ind,'String',sprintf('%0.f',slider_val));
 
+set(handles.text_rgb_means,'String',sprintf('R: %.f, G: %.f, B: %.f',...
+    mean(mean(img(:,:,1))),mean(mean(img(:,:,2))),mean(mean(img(:,:,3)))));
+
+
 
 % Update RGB plot
 delete(getappdata(handles.figure_nanoxim,'frame_line_handle'));
@@ -190,6 +194,7 @@ rgb_vid = zeros(vid_handle.Height,vid_handle.Width,3,num_frames,'uint8');
 % keyboard
 rgb_mean = zeros(num_frames,3);
 
+% keyboard
 handles.busy_spinner.start;
 tic
 hw = waitbar(0,'Loading Video...');
@@ -197,6 +202,10 @@ for t=1:num_frames
     rgb_vid(:,:,:,t)=readFrame(vid_handle);
 %     keyboard
     rgb_mean(t,1:3) = squeeze(mean(mean(rgb_vid(:,:,:,t),2),1));
+%     reg_mean2(t,1) = mean(mean(rgb_vid(:,:,1,t)));
+%     reg_mean2(t,2) = mean(mean(rgb_vid(:,:,2,t)));
+%     reg_mean2(t,3) = mean(mean(rgb_vid(:,:,3,t)));
+    
     waitbar(t/num_frames,hw);
 end
 close(hw);
