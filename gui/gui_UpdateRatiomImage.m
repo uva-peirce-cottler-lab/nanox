@@ -2,23 +2,23 @@ function gui_UpdateRatiomImage(target_handle, handles)
 dprintf('Updating Ratiometric Image');
 % keyboard    
 handles = guidata(handles.figure_nanoxim);
-% target_handle = handles.axes_ratiom;
+
 
 % Get image
 ratio_img = getappdata(handles.figure_nanoxim,'ratio_img');
 if isempty(ratio_img); return; end
  
-% Get ROI mask
-bw_ratiom_for_roi = getappdata(handles.figure_nanoxim,'bw_ratiom_for_roi');
-if isempty(bw_ratiom_for_roi)
-    bw_ratiom_for_roi= true(size(ratio_img));
+% Get ROI mask from memory (load from disk done when video loaded
+bw_roi_ratiom = getappdata(handles.figure_nanoxim,'bw_roi_ratiom');
+if isempty(bw_roi_ratiom)
+    bw_roi_ratiom= true(size(ratio_img));
 end
 
 % Get Pix pass
 bw_pix_pass = getappdata(handles.figure_nanoxim,'bw_pix_pass');
 
 % ROI is union of ROI and pixpass
-bw_roi_pix_pass = bw_pix_pass & bw_ratiom_for_roi;
+bw_roi_pix_pass = bw_pix_pass & bw_roi_ratiom;
 
 
 % Displaying a heatmap image with a color bar and black with excluded
@@ -60,5 +60,5 @@ out_str = sprintf('Output: %0.4f Pixels Used, RatioM: %.3f +- %.3f',...
 set(handles.text_ratiom_output,'String',out_str);
 dprintf(out_str);
 
-% keyboard 
+
 end

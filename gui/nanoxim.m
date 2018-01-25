@@ -22,7 +22,7 @@ function varargout = nanoxim(varargin)
 
 % Edit the above text to modify the response to help nanoxim
 
-% Last Modified by GUIDE v2.5 06-Oct-2017 19:24:45
+% Last Modified by GUIDE v2.5 25-Jan-2018 14:30:16
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -183,8 +183,6 @@ setappdata(handles.figure_nanoxim, 'current_mv_path',current_mv_path);
 setappdata(handles.figure_nanoxim, 'current_mv_name',mv_list{get(handles.listbox_mv_names,'Value')});
 
 
-% % keyboard
-
 
 % read video
 vid_handle = VideoReader(current_mv_path);
@@ -220,7 +218,6 @@ setappdata(handles.figure_nanoxim,'rgb_mean',...
 setappdata(handles.figure_nanoxim,'vid_dim',...
     size(rgb_vid));
 setappdata(handles.figure_nanoxim,'vid_handle',vid_handle);
-setappdata(handles.figure_nanoxim,'vid_handle',vid_handle);
 
 % Show First Image
 % img = readFrame(vid_handle);
@@ -238,6 +235,13 @@ frame_line_handle = plot([1 1],ylim(handles.axes_rgb_mean),'k','Parent',handles.
 hold(handles.axes_rgb_mean,'off'); 
 setappdata(handles.figure_nanoxim,'frame_line_handle',frame_line_handle);
 
+% Load ROI from disk if it exists and port it through [Add ROI] button
+if ~isempty(dir([current_mv_path '.mat']))
+    st=load([current_mv_path '.mat']);
+    pushbutton_add_roi_Callback(handles.pushbutton_add_roi, st, handles);
+%     setappdata(handles.figure_nanoxim,'vert_roi_ratiom',st.vert_roi_ratiom);
+%     setappdata(handles.figure_nanoxim,'bw_roi_ratiom',st.bw_roi_ratiom);
+end
 
 % Initialize sliders to correc tange
 gui_UpdateSliderMax(handles,vid_handle.Duration * vid_handle.FrameRate)
@@ -339,6 +343,8 @@ else
     for_img = imread(getappdata(handles.figure_nanoxim, 'for_img_path'));
 end
 % keyboard
+
+
 % Calculate ratiometric image
 [ratio_img, bw_pix_pass] = nanoxim_CalculateRatiomImage(bck_img,for_img, ...
     rgb_thresh);
@@ -378,38 +384,38 @@ if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColo
 end
 
 
-% --- Executes on button press in pushbutton_save_metadata.
-function pushbutton_save_metadata_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton_save_metadata (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-
 % --- Executes on button press in pushbutton_add_roi.
 function pushbutton_add_roi_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton_add_roi (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+if isfield(eventdata,'vert_roi_ratiom'); v = eventdata.vert_roi_ratiom;
+else v=[]; end
 
 % keyboard
 if strcmp(get(hObject,'String'),'Add ROI')
-    poly_ratiom_for_roi = impoly(handles.axes_ratiom);
+    if ~isempty(eventdata)
+        imshow(eventdata.bw_roi_ratiom,'Parent',handles.axes_ratiom);
+    end
+    
+    poly_ratiom_for_roi = impoly(handles.axes_ratiom,v);
     try
-    setappdata(handles.figure_nanoxim,'vert_ratiom_for_roi',...
+    setappdata(handles.figure_nanoxim,'vert_roi_ratiom',...
         poly_ratiom_for_roi.getPosition);
     catch ME
         return;
     end
-    bw_ratiom_for_roi = imresize(poly_ratiom_for_roi.createMask(),...
+    % expects ratiom image here
+    bw_roi_ratiom = imresize(poly_ratiom_for_roi.createMask(),...
         size(getappdata(handles.figure_nanoxim, 'ratio_img')));
-    setappdata(handles.figure_nanoxim,'bw_ratiom_for_roi',...
-        bw_ratiom_for_roi);
+    setappdata(handles.figure_nanoxim,'bw_roi_ratiom',...
+        bw_roi_ratiom);
     delete(poly_ratiom_for_roi);
 else % Delete ROI
     handle_ratiom_for_roi = getappdata(handles.figure_nanoxim, 'handle_ratiom_for_roi');
     try delete(handle_ratiom_for_roi); catch; fprintf('Handle DNE\n'); end
-    setappdata(handles.figure_nanoxim,'vert_ratiom_for_roi', []);
-     setappdata(handles.figure_nanoxim,'bw_ratiom_for_roi', []);
+    setappdata(handles.figure_nanoxim,'vert_roi_ratiom', []);
+     setappdata(handles.figure_nanoxim,'bw_roi_ratiom', []);
     setappdata(handles.figure_nanoxim, 'handle_ratiom_for_roi',[]);
     set(handles.pushbutton_add_roi,'String','Add ROI');
     set(handles.pushbutton_show_roi,'String','Show ROI');
@@ -423,12 +429,12 @@ function pushbutton_show_roi_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton_show_roi (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-vert_ratiom_for_roi = getappdata(handles.figure_nanoxim,'vert_ratiom_for_roi');
+vert_roi_ratiom = getappdata(handles.figure_nanoxim,'vert_roi_ratiom');
 
-if isempty(vert_ratiom_for_roi); return; end
+if isempty(vert_roi_ratiom); return; end
 
 if strcmp(get(hObject,'String'),'Show ROI')
-    handle_ratiom_for_roi= impoly(handles.axes_ratiom, vert_ratiom_for_roi);
+    handle_ratiom_for_roi= impoly(handles.axes_ratiom, vert_roi_ratiom);
     setappdata(handles.figure_nanoxim, 'handle_ratiom_for_roi',handle_ratiom_for_roi);
     set(handles.pushbutton_add_roi,'String','Delete ROI');
     set(handles.pushbutton_show_roi,'String','Hide ROI');
@@ -807,3 +813,74 @@ function pushbutton_load_video_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to pushbutton_load_video (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
+
+
+
+% --- Executes on button press in pushbutton_save_metadata.
+function pushbutton_save_metadata_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_save_metadata (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Get roi image and vert
+st.vert_roi_ratiom = getappdata(handles.figure_nanoxim,'vert_roi_ratiom');
+st.bw_roi_ratiom = getappdata(handles.figure_nanoxim,'bw_roi_ratiom');
+
+% Get movie name
+st.current_mv_name = getappdata(handles.figure_nanoxim,'current_mv_name');
+st.current_mv_path = getappdata(handles.figure_nanoxim,'current_mv_path');
+st.browse_path = getappdata(handles.figure_nanoxim,'browse_path');
+
+% Get movie image size
+st.vid_dim = getappdata(handles.figure_nanoxim,'vid_dim');
+
+% Get background movie range
+st.edit_bck_low = str2double(get(handles.edit_bck_low,'String'));
+st.edit_bck_high = str2double(get(handles.edit_bck_low,'String'));
+
+% Get forground movie range
+st.edit_for_low = str2double(get(handles.edit_for_low,'String'));
+st.edit_for_high = str2double(get(handles.edit_for_low,'String'));
+
+% Export to disk prompt user with standard name
+st.mat_path = uiputfile([browse_path '/*.mat'],'Save metadata MAT file to disk',...
+    [current_mv_name '.mat']);
+save(mat_path, 'st');
+
+
+
+% --- Executes on button press in pushbutton_load_metadata.
+function pushbutton_load_metadata_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton_load_metadata (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+mat_path = uigetfile([browse_path '/*.mat'],'Load MAT metadata from disk',...
+    [current_mv_name '.mat']);
+
+st = load(mat_path);
+
+% set roi image and vert
+setappdata(handles.figure_nanoxim,'vert_roi_ratiom',st.vert_roi_ratiom);
+bw_roi_ratiom = getappdata(handles.figure_nanoxim,'bw_roi_ratiom',bw_roi_ratiom);
+
+% Get movie name
+st.current_mv_name = getappdata(handles.figure_nanoxim,'current_mv_name');
+st.current_mv_path = getappdata(handles.figure_nanoxim,'current_mv_path');
+st.browse_path = getappdata(handles.figure_nanoxim,'browse_path');
+
+% Get movie image size
+st.vid_dim = getappdata(handles.figure_nanoxim,'vid_dim');
+
+% Get background movie range
+st.edit_bck_low = str2double(get(handles.edit_bck_low,'String'));
+st.edit_bck_high = str2double(get(handles.edit_bck_low,'String'));
+
+% Get forground movie range
+st.edit_for_low = str2double(get(handles.edit_for_low,'String'));
+st.edit_for_high = str2double(get(handles.edit_for_low,'String'));
+
+
+
+
