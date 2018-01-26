@@ -900,16 +900,16 @@ assert(all(vid_dim==st.vid_dim),'Stored pixel dim differs from actual pixel dim'
 
 % set background movie range
 % keyboard
-handles.rslider_bck.setLowValue(st.edit_bck_low);
-set(handles.edit_bck_low,'String', num2str(st.edit_bck_low));
-handles.rslider_bck.setHighValue(st.edit_bck_high);
-set(handles.edit_bck_high,'String', num2str(st.edit_bck_high));
-% handles.rslider_bck.updateTextValues();
-
-handles.rslider_for.setLowValue(st.edit_for_low);
-set(handles.edit_for_low,'String', num2str(st.edit_for_low));
-handles.rslider_for.setHighValue(st.edit_for_high);
-set(handles.edit_for_high,'String', num2str(st.edit_for_high));
+% handles.rslider_bck.setLowValue(st.edit_bck_low);
+% set(handles.edit_bck_low,'String', num2str(st.edit_bck_low));
+% handles.rslider_bck.setHighValue(st.edit_bck_high);
+% set(handles.edit_bck_high,'String', num2str(st.edit_bck_high));
+% % handles.rslider_bck.updateTextValues();
+% 
+% handles.rslider_for.setLowValue(st.edit_for_low);
+% set(handles.edit_for_low,'String', num2str(st.edit_for_low));
+% handles.rslider_for.setHighValue(st.edit_for_high);
+% set(handles.edit_for_high,'String', num2str(st.edit_for_high));
 % handles.rslider_for.updateTextValues();
 
 % Run calculate callback
