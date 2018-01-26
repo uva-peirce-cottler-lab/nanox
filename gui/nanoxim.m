@@ -236,12 +236,12 @@ hold(handles.axes_rgb_mean,'off');
 setappdata(handles.figure_nanoxim,'frame_line_handle',frame_line_handle);
 
 % Load ROI from disk if it exists and port it through [Add ROI] button
-if ~isempty(dir([current_mv_path '.mat']))
-    st=load([current_mv_path '.mat']);
-    pushbutton_add_roi_Callback(handles.pushbutton_add_roi, st, handles);
+% if ~isempty(dir([current_mv_path '.mat']))
+%     st=load([current_mv_path '.mat']);
+%     pushbutton_add_roi_Callback(handles.pushbutton_add_roi, st, handles);
 %     setappdata(handles.figure_nanoxim,'vert_roi_ratiom',st.vert_roi_ratiom);
 %     setappdata(handles.figure_nanoxim,'bw_roi_ratiom',st.bw_roi_ratiom);
-end
+% end
 
 % Initialize sliders to correc tange
 gui_UpdateSliderMax(handles,vid_handle.Duration * vid_handle.FrameRate)
@@ -389,16 +389,11 @@ function pushbutton_add_roi_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton_add_roi (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-if isfield(eventdata,'vert_roi_ratiom'); v = eventdata.vert_roi_ratiom;
-else v=[]; end
+
 
 % keyboard
 if strcmp(get(hObject,'String'),'Add ROI')
-    if ~isempty(eventdata)
-        imshow(eventdata.bw_roi_ratiom,'Parent',handles.axes_ratiom);
-    end
-    
-    poly_ratiom_for_roi = impoly(handles.axes_ratiom,v);
+    poly_ratiom_for_roi = impoly(handles.axes_ratiom);
     try
     setappdata(handles.figure_nanoxim,'vert_roi_ratiom',...
         poly_ratiom_for_roi.getPosition);
@@ -418,7 +413,7 @@ else % Delete ROI
      setappdata(handles.figure_nanoxim,'bw_roi_ratiom', []);
     setappdata(handles.figure_nanoxim, 'handle_ratiom_for_roi',[]);
     set(handles.pushbutton_add_roi,'String','Add ROI');
-    set(handles.pushbutton_show_roi,'String','Show ROI');
+    set(handles.pushbutton_show_roi,'String','Edit ROI');
 end
 
 gui_UpdateRatiomImage(handles.axes_ratiom, handles);
@@ -433,19 +428,31 @@ vert_roi_ratiom = getappdata(handles.figure_nanoxim,'vert_roi_ratiom');
 
 if isempty(vert_roi_ratiom); return; end
 
-if strcmp(get(hObject,'String'),'Show ROI')
+if strcmp(get(hObject,'String'),'Edit ROI')
     handle_ratiom_for_roi= impoly(handles.axes_ratiom, vert_roi_ratiom);
     setappdata(handles.figure_nanoxim, 'handle_ratiom_for_roi',handle_ratiom_for_roi);
     set(handles.pushbutton_add_roi,'String','Delete ROI');
     set(handles.pushbutton_show_roi,'String','Hide ROI');
 else % Hide ROI
-    handle_ratiom_for_roi = getappdata(handles.figure_nanoxim, 'handle_ratiom_for_roi');
-    try delete(handle_ratiom_for_roi); catch; fprintf('Handle DNE\n'); end
-    set(handles.pushbutton_add_roi,'String','Add ROI');
-    set(handles.pushbutton_show_roi,'String','Show ROI');
     
+    handle_ratiom_for_roi = getappdata(handles.figure_nanoxim, 'handle_ratiom_for_roi');
+%     keyboard
+      
+    try 
+        % Store new roi
+        setappdata(handles.figure_nanoxim,'vert_roi_ratiom',...
+            handle_ratiom_for_roi.getPosition());
+        setappdata(handles.figure_nanoxim,'bw_roi_ratiom',...
+            handle_ratiom_for_roi.createMask());
+       % delete polygon
+        delete(handle_ratiom_for_roi); 
+    catch; fprintf('Handle DNE\n'); 
+    end
+    set(handles.pushbutton_add_roi,'String','Add ROI');
+    set(handles.pushbutton_show_roi,'String','Edit ROI');
+    gui_UpdateRatiomImage(handles.axes_ratiom,handles);
 end
-gui_UpdateRatiomImage(handles.axes_ratiom,handles);
+
 
 
 % --- Executes on button press in pushbutton_save_ratiom.
@@ -454,12 +461,19 @@ function pushbutton_save_ratiom_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-current_mv_path = getappdata(handles.figure_nanoxim, 'current_mv_path');
+current_mv_name = getappdata(handles.figure_nanoxim, 'current_mv_name');
+browse_path = getappdata(handles.figure_nanoxim, 'browse_path');
+% keyboard
+% Prompt user for mat file and load
+[FileName,PathName] = uiputfile(fullfile([browse_path '\*.png']),'Load MAT metadata from disk',...
+    [current_mv_name '.png']);
+if FileName==0; return; end
+
 % Get Image Name
 h=figure;
 ha = gca;
 gui_UpdateRatiomImage(ha, handles);
-saveas(ha,[current_mv_path '.png']);
+saveas(ha,[PathName FileName]);
 close(h);
 
 
@@ -836,16 +850,16 @@ st.vid_dim = getappdata(handles.figure_nanoxim,'vid_dim');
 
 % Get background movie range
 st.edit_bck_low = str2double(get(handles.edit_bck_low,'String'));
-st.edit_bck_high = str2double(get(handles.edit_bck_low,'String'));
+st.edit_bck_high = str2double(get(handles.edit_bck_high,'String'));
 
 % Get forground movie range
 st.edit_for_low = str2double(get(handles.edit_for_low,'String'));
-st.edit_for_high = str2double(get(handles.edit_for_low,'String'));
+st.edit_for_high = str2double(get(handles.edit_for_high,'String'));
 
 % Export to disk prompt user with standard name
-st.mat_path = uiputfile([browse_path '/*.mat'],'Save metadata MAT file to disk',...
-    [current_mv_name '.mat']);
-save(mat_path, 'st');
+mat_path = uiputfile([st.browse_path '/*.mat'],'Save metadata MAT file to disk',...
+    [st.current_mv_name '.mat']);
+save(mat_path, '-struct', 'st');
 
 
 
@@ -854,33 +868,51 @@ function pushbutton_load_metadata_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton_load_metadata (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+browse_path=getappdata(handles.figure_nanoxim,'browse_path');
+current_mv_name=getappdata(handles.figure_nanoxim,'current_mv_name');
 
-
+% Prompt user for mat file and load
 mat_path = uigetfile([browse_path '/*.mat'],'Load MAT metadata from disk',...
     [current_mv_name '.mat']);
-
 st = load(mat_path);
 
 % set roi image and vert
 setappdata(handles.figure_nanoxim,'vert_roi_ratiom',st.vert_roi_ratiom);
-bw_roi_ratiom = getappdata(handles.figure_nanoxim,'bw_roi_ratiom',bw_roi_ratiom);
+setappdata(handles.figure_nanoxim,'bw_roi_ratiom',st.bw_roi_ratiom);
 
 % Get movie name
-st.current_mv_name = getappdata(handles.figure_nanoxim,'current_mv_name');
-st.current_mv_path = getappdata(handles.figure_nanoxim,'current_mv_path');
-st.browse_path = getappdata(handles.figure_nanoxim,'browse_path');
+% setappdata(handles.figure_nanoxim,'current_mv_name',current_mv_name);
+setappdata(handles.figure_nanoxim,'current_mv_path',[browse_path '/' current_mv_name]);
+% setappdata(handles.figure_nanoxim,'browse_path',browse_path);
 
-% Get movie image size
+% Check movie image size
+vid_dim = getappdata(handles.figure_nanoxim,'vid_dim');
 st.vid_dim = getappdata(handles.figure_nanoxim,'vid_dim');
+assert(all(vid_dim==st.vid_dim),'Stored pixel dim differs from actual pixel dim');
 
-% Get background movie range
-st.edit_bck_low = str2double(get(handles.edit_bck_low,'String'));
-st.edit_bck_high = str2double(get(handles.edit_bck_low,'String'));
+
+% st.edit_bck_low = str2double(get(handles.edit_bck_low,'String'));
+% st.edit_bck_high = str2double(get(handles.edit_bck_low,'String'));
 
 % Get forground movie range
-st.edit_for_low = str2double(get(handles.edit_for_low,'String'));
-st.edit_for_high = str2double(get(handles.edit_for_low,'String'));
+% st.edit_for_low = str2double(get(handles.edit_for_low,'String'));
+% st.edit_for_high = str2double(get(handles.edit_for_low,'String'));
 
+% set background movie range
+% keyboard
+handles.rslider_bck.setLowValue(st.edit_bck_low);
+set(handles.edit_bck_low,'String', num2str(st.edit_bck_low));
+handles.rslider_bck.setHighValue(st.edit_bck_high);
+set(handles.edit_bck_high,'String', num2str(st.edit_bck_high));
+% handles.rslider_bck.updateTextValues();
 
+handles.rslider_for.setLowValue(st.edit_for_low);
+set(handles.edit_for_low,'String', num2str(st.edit_for_low));
+handles.rslider_for.setHighValue(st.edit_for_high);
+set(handles.edit_for_high,'String', num2str(st.edit_for_high));
+% handles.rslider_for.updateTextValues();
+
+% Run calculate callback
+pushbutton_calculate_Callback(handles.pushbutton_calculate, eventdata, handles);
 
 
