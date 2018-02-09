@@ -182,33 +182,32 @@ current_mv_path = [browse_path '/' mv_list{get(handles.listbox_mv_names,'Value')
 setappdata(handles.figure_nanoxim, 'current_mv_path',current_mv_path);
 setappdata(handles.figure_nanoxim, 'current_mv_name',mv_list{get(handles.listbox_mv_names,'Value')});
 
-
-
-% read video
-vid_handle = VideoReader(current_mv_path);
-num_frames = ceil(vid_handle.Duration * vid_handle.FrameRate);
-% keyboard
-rgb_vid = zeros(vid_handle.Height,vid_handle.Width,3,num_frames,'uint8');
-% keyboard
-rgb_mean = zeros(num_frames,3);
-
-% keyboard
 handles.busy_spinner.start;
-tic
-hw = waitbar(0,'Loading Video...');
-for t=1:num_frames
-    rgb_vid(:,:,:,t)=readFrame(vid_handle);
-%     keyboard
-    rgb_mean(t,1:3) = squeeze(mean(mean(rgb_vid(:,:,:,t),2),1));
-%     reg_mean2(t,1) = mean(mean(rgb_vid(:,:,1,t)));
-%     reg_mean2(t,2) = mean(mean(rgb_vid(:,:,2,t)));
-%     reg_mean2(t,3) = mean(mean(rgb_vid(:,:,3,t)));
-    
-    waitbar(t/num_frames,hw);
-end
-close(hw);
-toc
+[rgb_vid, rgb_mean, vid_handle] = load_video(current_mv_path);
 handles.busy_spinner.stop;
+
+% 
+% 
+% % read video
+% vid_handle = VideoReader(current_mv_path);
+% num_frames = ceil(vid_handle.Duration * vid_handle.FrameRate);
+% % keyboard
+% rgb_vid = zeros(vid_handle.Height,vid_handle.Width,3,num_frames,'uint8');
+% % keyboard
+% rgb_mean = zeros(num_frames,3);
+% 
+% % keyboard
+% handles.busy_spinner.start;
+% tic
+% hw = waitbar(0,'Loading Video...');
+% for t=1:num_frames
+%     rgb_vid(:,:,:,t)=readFrame(vid_handle);
+%     rgb_mean(t,1:3) = squeeze(mean(mean(rgb_vid(:,:,:,t),2),1)); 
+%     waitbar(t/num_frames,hw);
+% end
+% close(hw);
+% toc
+% handles.busy_spinner.stop;
 
 % Store video data
 setappdata(handles.figure_nanoxim,'rgb_vid',...
@@ -338,9 +337,23 @@ if get(handles.radiobutton_video,'Value')==1
     bck_img = nanoxim_GetFrameRangeImg(vid_obj, bck_frame_range, blur_rad_pix);
     for_img = nanoxim_GetFrameRangeImg(vid_obj, for_frame_range, blur_rad_pix);
 else
+    bck_img_path = getappdata(handles.figure_nanoxim, 'bck_img_path');
+    for_img_path = getappdata(handles.figure_nanoxim, 'for_img_path');
+    
     % Get Background and Foreground Images
-    bck_img = imread(getappdata(handles.figure_nanoxim, 'bck_img_path'));
-    for_img = imread(getappdata(handles.figure_nanoxim, 'for_img_path'));
+    if ~isempty(regexp(bck_img_path,'.*\.(?:jpg|jpeg|gif|png|bmp|tif|tiff)$','once'))
+         bck_img = imread(bck_img_path);
+    else
+         bck_img =  max(load_video(bck_img_path),[],4);
+    end
+    
+      % Get Background and Foreground Images
+    if ~isempty(regexp(for_img_path,'.*\.(?:jpg|jpeg|gif|png|bmp|tif|tiff)$','once'))
+         for_img = imread(for_img_path);
+    else
+         for_img =  max(load_video(for_img_path),[],4);
+    end
+    
 end
 % keyboard
 
@@ -611,9 +624,12 @@ function pushbutton_bck_img_path_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 % Get path metadata
-browse_path = getappdata(handles.figure_nanoxim,'browse_path');
+bck_img_path = getappdata(handles.figure_nanoxim, 'bck_img_path'); 
+if ~isempty(bck_img_path); bck_img_dir_path = fileparts(bck_img_path);
+else bck_img_dir_path=[];
+end
 
-[FileName,PathName,FilterIndex] = uigetfile('*.tif','Select BCK Image',browse_path);
+[FileName,PathName,FilterIndex] = uigetfile([bck_img_dir_path '/*.*'],'Select BCK Image/Video');
 if FileName==0; return; end
 bck_img_path = [PathName FileName];
 set(handles.edit_bck_img_path,'string',bck_img_path);
@@ -627,9 +643,14 @@ function pushbutton_for_img_path_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton_for_img_path (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-browse_path = getappdata(handles.figure_nanoxim,'browse_path');
+% browse_path = getappdata(handles.figure_nanoxim,'browse_path');
 
-[FileName,PathName,FilterIndex] = uigetfile('*.tif','Select FOR Image',browse_path);
+for_img_path = getappdata(handles.figure_nanoxim, 'for_img_path'); 
+if ~isempty(for_img_path); for_img_dir_path = fileparts(for_img_path);
+else for_img_dir_path=[];
+end
+
+[FileName,PathName,FilterIndex] = uigetfile([for_img_dir_path '/*.*'],'Select FOR Image/Video');
 if FileName==0; return; end
 for_img_path = [PathName FileName];
 set(handles.edit_for_img_path,'string',for_img_path);
