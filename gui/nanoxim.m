@@ -22,7 +22,7 @@ function varargout = nanoxim(varargin)
 
 % Edit the above text to modify the response to help nanoxim
 
-% Last Modified by GUIDE v2.5 25-Jan-2018 14:30:16
+% Last Modified by GUIDE v2.5 02-Jul-2018 11:12:37
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -354,6 +354,11 @@ else
          for_img =  max(load_video(for_img_path),[],4);
     end
     
+end
+
+% Exclude background subtraction if specified by user
+if ~get(handles.ratiom_subtractbackground_checkbox,'Value')
+    bck_img = zeros(size(for_img),class(for_img));
 end
 % keyboard
 
@@ -937,3 +942,12 @@ assert(all(vid_dim==st.vid_dim),'Stored pixel dim differs from actual pixel dim'
 pushbutton_calculate_Callback(handles.pushbutton_calculate, eventdata, handles);
 
 
+
+
+% --- Executes on button press in ratiom_subtractbackground_checkbox.
+function ratiom_subtractbackground_checkbox_Callback(hObject, eventdata, handles)
+% hObject    handle to ratiom_subtractbackground_checkbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of ratiom_subtractbackground_checkbox
