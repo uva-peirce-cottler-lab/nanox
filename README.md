@@ -30,3 +30,9 @@ Oxygen Sensing Nanoparticle software to measure oxygen concentration noninvasive
 12. If an region of interest is needed, slick select ROI and define a polygon that encapusulates the wound, left click to add polygon verticies, right click to close polygon. Click calculate again to calcualte ratometric value in ROI.
 13. If the range of the ratiometric values need to be changed, use the slider on the right side of the ratiometric image.
 14. Save data if needed.
+
+## Other output
+The mean and std of selected pixels is also displayed for each image. 
+* [R/B]bs: background sutracted values for red of blue channel, this is the final signal used in the ratiometric image (B/R). 
+* [R/B]f: forground image for red or blue channel- pixels from the image of nanoparticles. 
+* [R/B]b: background image for red or blue channel- pixels from the image of vehicle control.
