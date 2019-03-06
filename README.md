@@ -32,7 +32,8 @@ Oxygen Sensing Nanoparticle software to measure oxygen concentration noninvasive
 14. Save data if needed.
 
 ## Other output
-The mean and std of selected pixels is also displayed for each image. 
-* [R/B]bs: background sutracted values for red of blue channel, this is the final signal used in the ratiometric image (B/R). 
+The mean and std of selected pixels are also displayed for each channel. 
+* [R/B]bs: background subtracted values for red of blue channel, this is the final signal used in the ratiometric image (B/R). 
 * [R/B]f: foreground image for red or blue channel- pixels from the image of nanoparticles. 
 * [R/B]b: background image for red or blue channel- pixels from the image of vehicle control.
+
