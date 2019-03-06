@@ -22,7 +22,7 @@ function varargout = nanoxim(varargin)
 
 % Edit the above text to modify the response to help nanoxim
 
-% Last Modified by GUIDE v2.5 02-Jul-2018 11:12:37
+% Last Modified by GUIDE v2.5 06-Mar-2019 12:13:57
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -364,10 +364,13 @@ end
 
 
 % Calculate ratiometric image
-[ratio_img, bw_pix_pass] = nanoxim_CalculateRatiomImage(bck_img,for_img, ...
+[ratio_img, bw_pix_pass, pix_vals_st] = nanoxim_CalculateRatiomImage(bck_img,for_img, ...
     rgb_thresh);
 setappdata(handles.figure_nanoxim,'ratio_img',ratio_img);
 setappdata(handles.figure_nanoxim,'bw_pix_pass',bw_pix_pass);
+setappdata(handles.figure_nanoxim,'pix_vals_st',pix_vals_st);
+
+
 % Stop Busy Spinner
 handles.busy_spinner.stop;
 
@@ -951,3 +954,49 @@ function ratiom_subtractbackground_checkbox_Callback(hObject, eventdata, handles
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of ratiom_subtractbackground_checkbox
+
+
+
+function red_output_Callback(hObject, eventdata, handles)
+% hObject    handle to red_output (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of red_output as text
+%        str2double(get(hObject,'String')) returns contents of red_output as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function red_output_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to red_output (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function blue_output_Callback(hObject, eventdata, handles)
+% hObject    handle to blue_output (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of blue_output as text
+%        str2double(get(hObject,'String')) returns contents of blue_output as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function blue_output_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to blue_output (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
