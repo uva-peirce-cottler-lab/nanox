@@ -18,6 +18,7 @@ function [hcomponent, hcontainer, rangeSlider] = gui_RangeSlider(val_range,...
     import java.awt.event.ItemEvent;
     import java.awt.event.ItemListener;
 
+%     keyboard
     rangeSlider = RangeSlider(val_range(1), val_range(2), ...
         val_range(1), val_range(2));
     rangeSlider.setOrientation(~strcmp(orient,'horizontal'));
@@ -42,6 +43,7 @@ function [hcomponent, hcontainer, rangeSlider] = gui_RangeSlider(val_range,...
     end
 
     rangeSlider.StateChangedCallback = @updateTextValues;
+%     set(rangeSlider,'units','norm')
     
     panel = JPanel(BorderLayout());
     if strcmp(orient,'horizontal')
@@ -54,5 +56,5 @@ function [hcomponent, hcontainer, rangeSlider] = gui_RangeSlider(val_range,...
     
     % hcontainer can be used to interact with panel like uicontrol
     [hcomponent, hcontainer] = javacomponent(panel, pos, gcf);
- 
+    
 end

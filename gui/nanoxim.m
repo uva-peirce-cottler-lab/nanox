@@ -55,21 +55,46 @@ function nanoxim_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for nanoxim
 handles.output = hObject;
 
-% Create a background range slider 
-pos = get(handles.slider_frame_ind,'position');
+% keyboard
+
+% Create a background and forgroudn sliders
+set(handles.slider_frame_ind,'units','pixels');
+sld_pos = get(handles.slider_frame_ind,'position');
+set(handles.slider_frame_ind,'units','characters');
+
+set(handles.edit_bck_high,'units','pixels');
+bck_pos = get(handles.edit_bck_high,'position');
+set(handles.edit_bck_high,'units','characters');
+
+set(handles.edit_for_high,'units','pixels');
+for_pos = get(handles.edit_for_high,'position');
+set(handles.edit_for_high,'units','characters');
+
 [handles.rslider_bck_hcomp, handles.rslider_bck_hcont, handles.rslider_bck] = ...
-    gui_RangeSlider([1 100],[pos(1) pos(2)-45 pos(3) 40],'BCK','horizontal',...
+    gui_RangeSlider([1 100],[sld_pos(1) bck_pos(2)-bck_pos(4) sld_pos(3) 2*bck_pos(4)],'BCK','horizontal',...
     handles.edit_bck_low,handles.edit_bck_high, handles);
 % Create a forground range slider 
 [handles.rslider_for_hcomp, handles.rslider_for_hcont, handles.rslider_for] = ...
-    gui_RangeSlider([1 100],[pos(1) pos(2)-85 pos(3) 40],'FOR','horizontal',...
+    gui_RangeSlider([1 100],[sld_pos(1) for_pos(2)-for_pos(4) sld_pos(3) 2*for_pos(4)],'FOR','horizontal',...
     handles.edit_for_low, handles.edit_for_high, handles);
+
 % Ratiometrix threshold slider
-pos = get(handles.uipanel_ratiom,'position');
+set(handles.text_ratiom_min,'units','pixels');
+rmin_pos = get(handles.text_ratiom_min,'position');
+set(handles.text_ratiom_min,'units','characters');
+
+set(handles.edit_ratiom_low,'units','pixels');
+rlow_pos = get(handles.edit_ratiom_low,'position');
+set(handles.edit_ratiom_low,'units','characters');
+
+
+% sld_pos = get(handles.uipanel_ratiom,'position');
 [handles.rslider_ratiom_hcomp, handles.rslider_ratiom_hcont, handles.rslider_ratiom] = ...
-    gui_RangeSlider([0 100],[pos(1)+pos(3) pos(2) 45 pos(4)-50],'RAT','vertical',...
+    gui_RangeSlider([0 100],[rmin_pos(1) rmin_pos(2)+rmin_pos(4) 1.3*rmin_pos(3)...
+    rlow_pos(2)-(rmin_pos(2)+rmin_pos(4))],'RAT','vertical',...
     handles.edit_ratiom_low, handles.edit_ratiom_high, handles);
 
+% keyboard
 % Add continuous callback for video index slider
 hListener = addlistener(handles.slider_frame_ind,'ContinuousValueChange',@slider_frame_ind_Callback);
 setappdata(handles.slider_frame_ind,'sliderListener',hListener)
@@ -89,8 +114,8 @@ catch
 end
 jObj.setPaintsWhenStopped(true);  % default = false
 jObj.useWhiteDots(false);         % default = false (true is good for dark backgrounds)
-pos = get(handles.figure_nanoxim,'Position');
-javacomponent(jObj.getComponent, [pos(3)-32,pos(4)-32,32,32], handles.figure_nanoxim);
+sld_pos = get(handles.figure_nanoxim,'Position');
+javacomponent(jObj.getComponent, [sld_pos(3)-32,sld_pos(4)-32,32,32], handles.figure_nanoxim);
 handles.busy_spinner=jObj;
 
 % Set colororder on RGB mean plot
