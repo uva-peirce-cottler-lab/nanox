@@ -100,6 +100,12 @@ hListener = addlistener(handles.slider_frame_ind,'ContinuousValueChange',@slider
 setappdata(handles.slider_frame_ind,'sliderListener',hListener)
 
 %Initialize busy icon for calculations
+% keyboard
+
+set(handles.figure_nanoxim,'units','pixels');
+fig_pos = get(handles.figure_nanoxim,'position');
+set(handles.figure_nanoxim,'units','characters');
+
 try
     % R2010a and newer
     iconsClassName = 'com.mathworks.widgets.BusyAffordance$AffordanceSize';
@@ -115,7 +121,9 @@ end
 jObj.setPaintsWhenStopped(true);  % default = false
 jObj.useWhiteDots(false);         % default = false (true is good for dark backgrounds)
 sld_pos = get(handles.figure_nanoxim,'Position');
-javacomponent(jObj.getComponent, [sld_pos(3)-32,sld_pos(4)-32,32,32], handles.figure_nanoxim);
+javacomponent(jObj.getComponent, [fig_pos(3)-bck_pos(4) ...
+    fig_pos(4)-bck_pos(4)...
+    bck_pos(4) bck_pos(4)], handles.figure_nanoxim);
 handles.busy_spinner=jObj;
 
 % Set colororder on RGB mean plot
