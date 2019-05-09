@@ -22,7 +22,7 @@ function varargout = nanoxim(varargin)
 
 % Edit the above text to modify the response to help nanoxim
 
-% Last Modified by GUIDE v2.5 06-Mar-2019 12:13:57
+% Last Modified by GUIDE v2.5 09-May-2019 15:43:52
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -346,6 +346,16 @@ function pushbutton_calculate_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 dprintf('Claculating Ratiometric Image');
 
+% keyboard
+% Channel index for top portion of ratio
+chan_str = 'RGB';
+numerator_chan_ind = find(regexp(chan_str,get(get(handles.uibuttongroup_top,...
+    'SelectedObject'),'String'),'once'));
+% Channel index for bottom portion of ratio
+denominator_chan_ind = find(regexp(chan_str,get(get(handles.uibuttongroup_bot,...
+    'SelectedObject'),'String'),'once'));
+
+
 % Get background range
 bck_frame_range = [handles.rslider_bck.getLowValue() handles.rslider_bck.HighValue()];
 for_frame_range = [handles.rslider_for.getLowValue() handles.rslider_for.HighValue()];
@@ -398,7 +408,7 @@ end
 
 % Calculate ratiometric image
 [ratio_img, bw_pix_pass, pix_vals_st] = nanoxim_CalculateRatiomImage(bck_img,for_img, ...
-    rgb_thresh);
+    rgb_thresh, numerator_chan_ind,denominator_chan_ind);
 setappdata(handles.figure_nanoxim,'ratio_img',ratio_img);
 setappdata(handles.figure_nanoxim,'bw_pix_pass',bw_pix_pass);
 setappdata(handles.figure_nanoxim,'pix_vals_st',pix_vals_st);
@@ -991,17 +1001,17 @@ function ratiom_subtractbackground_checkbox_Callback(hObject, eventdata, handles
 
 
 function red_output_Callback(hObject, eventdata, handles)
-% hObject    handle to red_output (see GCBO)
+% hObject    handle to numerator_output (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of red_output as text
-%        str2double(get(hObject,'String')) returns contents of red_output as a double
+% Hints: get(hObject,'String') returns contents of numerator_output as text
+%        str2double(get(hObject,'String')) returns contents of numerator_output as a double
 
 
 % --- Executes during object creation, after setting all properties.
 function red_output_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to red_output (see GCBO)
+% hObject    handle to numerator_output (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -1013,18 +1023,30 @@ end
 
 
 
-function blue_output_Callback(hObject, eventdata, handles)
-% hObject    handle to blue_output (see GCBO)
+function numerator_output_Callback(hObject, eventdata, handles)
+% hObject    handle to numerator_output (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of blue_output as text
-%        str2double(get(hObject,'String')) returns contents of blue_output as a double
+% Hints: get(hObject,'String') returns contents of numerator_output as text
+%        str2double(get(hObject,'String')) returns contents of numerator_output as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function blue_output_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to blue_output (see GCBO)
+function numerator_output_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to numerator_output (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+% --- Executes during object creation, after setting all properties.
+function denominator_output_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to numerator_output (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
