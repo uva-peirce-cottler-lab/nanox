@@ -349,12 +349,12 @@ dprintf('Claculating Ratiometric Image');
 % keyboard
 % Channel index for top portion of ratio
 chan_str = 'RGB';
-numerator_chan_ind = find(regexp(chan_str,get(get(handles.uibuttongroup_top,...
-    'SelectedObject'),'String'),'once'));
+numerator_chan_ind = regexp(chan_str,get(get(handles.uibuttongroup_top,...
+    'SelectedObject'),'String'),'once');
 % Channel index for bottom portion of ratio
-denominator_chan_ind = find(regexp(chan_str,get(get(handles.uibuttongroup_bot,...
-    'SelectedObject'),'String'),'once'));
-
+denominator_chan_ind = regexp(chan_str,get(get(handles.uibuttongroup_bot,...
+    'SelectedObject'),'String'),'once');
+% keyboard
 
 % Get background range
 bck_frame_range = [handles.rslider_bck.getLowValue() handles.rslider_bck.HighValue()];
