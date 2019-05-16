@@ -38,7 +38,7 @@ Oxygen Sensing Nanoparticle software to measure oxygen concentration noninvasive
 2. The blurred background image is subtracted from the blurred foreground image.
 3. Steps 1 and 2 are repeated for the Denominator channel.
 4. The pixels are each filtered with the user specified thresholds for numerator and denominator channels (included pixels must be *x* above background when subtracted).
-5. Pixels that pass for both channels are used, the numerator pixels are divided by the denominator pixels, this image is displayed as the ratiometric image.
+5. Pixels that pass for both channels are used, the numerator pixels are divided by the denominator pixels (in a pixel by pixel fashion), this image is displayed as the ratiometric image.
 6. The mean ratio is displayed below the output image axes.
 
 
@@ -46,13 +46,13 @@ Oxygen Sensing Nanoparticle software to measure oxygen concentration noninvasive
 The mean and std of selected pixels are also displayed for each channel.
 
 Ratio channels are defined as Numerator/ Denomintor.
-* Display Box 1: Ratiometric Values
-** Displays ratiometric value with channels selected (e.g. B/R), reports mean of ratiometric values calculated pixel-by pixel.
-** Fraction of pixels used is the fraction of pixels that pass the threshold values for each channel above background *and* within the ROI (divided by total area of ROI).
-* Display Box 2: Values for Numerator Channel
-** Reports mean pixels values for background subtracted image, foreground image, and background image of Numerator channel. Note that pixel filtering *is still done for these values* (even if the background subtration is disabled, the foreground pixels must still be above the threshold values).
-* Display Box 3: Values for Denominator Channel
-** Reports mean pixels values for background subtracted image, foreground image, and background image of the Denominator Channel. Note that pixel filtering *is still done for these values* (even if the background subtration is disabled the foreground pixels must still be above the threshold values).
-* *So to get the same values for the foreground image with and without background subtraction, the Thresholds for Numerator and Denominator must be set to -255 to insure no pixel filtering.
+1. **Display Box 1: Ratiometric Values**
+- Displays ratiometric value with channels selected (e.g. B/R), reports mean of ratiometric values calculated pixel-by pixel.
+- Fraction of pixels used is the fraction of pixels that pass the threshold values for each channel above background *and* within the ROI (divided by total area of ROI).
+2. **Display Box 2: Values for Numerator Channel**
+- Reports mean pixels values for background subtracted image, foreground image, and background image of Numerator channel. Note that pixel filtering *is still done for these values* (even if the background subtration is disabled, the foreground pixels must still be above the threshold values).
+3. **Display Box 3: Values for Denominator Channel**
+- Reports mean pixels values for background subtracted image, foreground image, and background image of the Denominator Channel. Note that pixel filtering *is still done for these values* (even if the background subtration is disabled the foreground pixels must still be above the threshold values).
+* *Note: to get the same values for the foreground image with and without background subtraction, the Thresholds for Numerator and Denominator must be set to -255 to insure no pixel filtering.*
 
 
