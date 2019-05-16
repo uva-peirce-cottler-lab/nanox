@@ -28,7 +28,7 @@ Oxygen Sensing Nanoparticle software to measure oxygen concentration noninvasive
 
 
 ## Analysis
-11. Click calculate and ratiometric image will be calculated and displayed as heatmap image and average value is displayed in textbox below. Fraction of pixels used will also be displayed as a portion of ROI (or entire image if no ROI is set). Pixels without sufficient signal in both channels are eliminated because low signal makes ratios unreliable.
+11. Click calculate and ratiometric image will be calculated and displayed (see below). Pixels without sufficient signal in both channels are eliminated because low signal makes ratios unreliable.
 12. If an region of interest is needed, slick select ROI and define a polygon that encapusulates the wound, left click to add polygon verticies, right click to close polygon. Click calculate again to calcualte ratometric value in ROI.
 13. If the range of the ratiometric values need to be changed, use the slider on the right side of the ratiometric image.
 14. Save data if needed.
@@ -48,7 +48,7 @@ The mean and std of selected pixels are also displayed for each channel.
 Ratio channels are defined as Numerator/ Denomintor.
 * Display Box 1: Ratiometric Values
 ** Displays ratiometric value with channels selected (e.g. B/R), reports mean of ratiometric values calculated pixel-by pixel.
-** Fraction of pixels used is the fraction of pixels that pass the threshold values for each channel above background *and* within the ROI, divided by total image area (not ROI area).
+** Fraction of pixels used is the fraction of pixels that pass the threshold values for each channel above background *and* within the ROI (divided by total area of ROI).
 * Display Box 2: Values for Numerator Channel
 ** Reports mean pixels values for background subtracted image, foreground image, and background image of Numerator channel. Note that pixel filtering *is still done for these values* (even if the background subtration is disabled, the foreground pixels must still be above the threshold values).
 * Display Box 3: Values for Denominator Channel
