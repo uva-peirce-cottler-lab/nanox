@@ -50,9 +50,9 @@ Ratio channels are defined as Numerator/ Denomintor.
 - Displays ratiometric value with channels selected (e.g. B/R), reports mean of ratiometric values calculated pixel-by pixel.
 - Fraction of pixels used is the fraction of pixels that pass the threshold values for each channel above background *and* within the ROI (divided by total area of ROI).
 2. **Display Box 2: Values for Numerator Channel**
-- Reports mean pixels values for background subtracted image, foreground image, and background image of Numerator channel. Note that pixel filtering *is still done for these values* (even if the background subtration is disabled, the foreground pixels must still be above the threshold values).
+- Reports mean pixels values for background subtracted image, foreground image, and background image of Numerator channel. Note that pixel filtering *is still done for these values* (even if the background subtration is disabled, the foreground pixels must still be above the threshold values **for both channels**).
 3. **Display Box 3: Values for Denominator Channel**
-- Reports mean pixels values for background subtracted image, foreground image, and background image of the Denominator Channel. Note that pixel filtering *is still done for these values* (even if the background subtration is disabled the foreground pixels must still be above the threshold values).
+- Reports mean pixels values for background subtracted image, foreground image, and background image of the Denominator Channel. Note that pixel filtering *is still done for these values* (even if the background subtration is disabled the foreground pixels must still be above the threshold values **for both channels**).
 * *Note: to get the same values for the foreground image with and without background subtraction, the Thresholds for Numerator and Denominator must be set to -255 to insure no pixel filtering.*
 
 
