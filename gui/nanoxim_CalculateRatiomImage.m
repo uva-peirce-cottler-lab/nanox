@@ -18,7 +18,8 @@ backsub_denominator = for_denominator - back_denominator;
 ratio_img = double(backsub_numerator)./double(backsub_denominator);
 
 % Filter only valid pixels
-bw_pixpass = backsub_numerator>rgb_sig_thresh(3) & backsub_denominator>rgb_sig_thresh(1); 
+bw_pixpass = backsub_numerator>rgb_sig_thresh(denominator_chan_ind) & ...
+    backsub_denominator>rgb_sig_thresh(numerator_chan_ind); 
 % keyboard
 fprintf('\tFraction of Image with Valid Data: %.2f\n',sum(bw_pixpass(:))/numel(bw_pixpass))
 
@@ -31,9 +32,6 @@ pix_st.denominator_backsub_vals = double(backsub_denominator(bw_pixpass));
 pix_st.numerator_back_vals = double(back_numerator(bw_pixpass));
 pix_st.numerator_for_vals = double(for_numerator(bw_pixpass));
 pix_st.numerator_backsub_vals = double(backsub_numerator(bw_pixpass));
-
-
-
 
 
 % keyboard
