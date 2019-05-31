@@ -1,5 +1,6 @@
 function gui_UpdateRatioSlider(handles)
 
+
 % Get ratio image
 ratio_img = getappdata(handles.figure_nanoxim,'ratio_img');
 bw_pix_pass = getappdata(handles.figure_nanoxim,'bw_pix_pass');
@@ -7,8 +8,11 @@ bw_pix_pass = getappdata(handles.figure_nanoxim,'bw_pix_pass');
 % Determine max pixel value from pixels that pass validation and exist
 % within ROI
 max_val = ceil(max(ratio_img(bw_pix_pass)));
-
+if isempty(max_val); error(['Max value of Ratiometric is empty:' ...
+        ' likely there is no signal present after background subtraction']);
+end
 % Set range of slider values
+% keyboard
 handles.rslider_ratiom.setMaximum(max_val);
 handles.rslider_ratiom.setMinimum(0);
 handles.rslider_ratiom.setLabelTable([]);
