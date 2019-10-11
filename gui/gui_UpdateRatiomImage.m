@@ -29,9 +29,9 @@ bw_roi_pix_pass = bw_pix_pass & bw_roi_ratiom;
 cmap = colormap(target_handle, jet);
 colormap(target_handle, vertcat([0 0 0], cmap));
 
-
-color_range = [handles.rslider_ratiom.getLowValue() ...
-    handles.rslider_ratiom.getHighValue()];
+% Get range for colorbar range
+color_range = [str2double(get(handles.edit_ratiom_low,'String')) ...
+    str2double(get(handles.edit_ratiom_high,'String'))];
 color_slice = abs(diff(color_range))./64;
 
 ratio_img_disp = ratio_img;
@@ -44,8 +44,7 @@ caxis(target_handle,color_range - [10*color_slice 0]);
 cmap = colormap(target_handle, jet);
 colormap(target_handle, vertcat([0 0 0], cmap));
 
-
-h=colorbar(target_handle);
+h = colorbar(target_handle);
 
 % Do not display bottom of color bar range
 ylim = get(h,'ylim');

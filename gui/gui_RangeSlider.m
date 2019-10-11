@@ -18,7 +18,6 @@ function [hcomponent, hcontainer, rangeSlider] = gui_RangeSlider(val_range,...
     import java.awt.event.ItemEvent;
     import java.awt.event.ItemListener;
 
-%     keyboard
     rangeSlider = RangeSlider(val_range(1), val_range(2), ...
         val_range(1), val_range(2));
     rangeSlider.setOrientation(~strcmp(orient,'horizontal'));

@@ -10,8 +10,11 @@ eval_str = ['handles.rslider_' reg_cell{1,1} '.set' ...
     [upper(reg_cell{1,2}(1)) reg_cell{1,2}(2:end)]  ...
     'Value(str2double(get(hObject,''String'')));'];
 
-eval(eval_str);
 
+gui_UpdateRatiomImage(handles.axes_ratiom,handles);
+
+% eval(eval_str);
+% keyboard
 % handles.(['rslider_' reg_cell{1,2}]).setHighValue(str2double(get(hObject,'String')));
 
 end
