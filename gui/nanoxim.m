@@ -83,18 +83,17 @@ set(handles.text_ratiom_min,'units','pixels');
 rmin_pos = get(handles.text_ratiom_min,'position');
 set(handles.text_ratiom_min,'units','characters');
 
-set(handles.edit_ratiom_low,'units','pixels');
-rlow_pos = get(handles.edit_ratiom_low,'position');
-set(handles.edit_ratiom_low,'units','characters');
-
+set(handles.edit_ratiom_max,'units','pixels');
+rlow_pos = get(handles.edit_ratiom_max,'position');
+set(handles.edit_ratiom_max,'units','characters');
 
 % sld_pos = get(handles.uipanel_ratiom,'position');
 [handles.rslider_ratiom_hcomp, handles.rslider_ratiom_hcont, handles.rslider_ratiom] = ...
-    gui_RangeSlider([0 100],[rmin_pos(1) rmin_pos(2)+rmin_pos(4) 1.3*rmin_pos(3)...
+    gui_RangeSlider([0 100],[rmin_pos(1) rmin_pos(2)+rmin_pos(4) 2*rmin_pos(3)...
     rlow_pos(2)-(rmin_pos(2)+rmin_pos(4))],'RAT','vertical',...
     handles.edit_ratiom_low, handles.edit_ratiom_high, handles);
 
-% keyboard
+
 % Add continuous callback for video index slider
 hListener = addlistener(handles.slider_frame_ind,'ContinuousValueChange',@slider_frame_ind_Callback);
 setappdata(handles.slider_frame_ind,'sliderListener',hListener)
@@ -344,7 +343,9 @@ function pushbutton_calculate_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton_calculate (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-dprintf('Claculating Ratiometric Image');
+dprintf('Calculating Ratiometric Image');
+setappdata(0,'calculating_flag',1);
+cleanup = onCleanup(@() setappdata(0,'calculating_flag',0));
 
 % keyboard
 % Channel index for top portion of ratio
@@ -354,7 +355,7 @@ numerator_chan_ind = regexp(chan_str,get(get(handles.uibuttongroup_top,...
 % Channel index for bottom portion of ratio
 denominator_chan_ind = regexp(chan_str,get(get(handles.uibuttongroup_bot,...
     'SelectedObject'),'String'),'once');
-% keyboard
+
 
 % Get background range
 bck_frame_range = [handles.rslider_bck.getLowValue() handles.rslider_bck.HighValue()];
@@ -405,7 +406,7 @@ if ~get(handles.ratiom_subtractbackground_checkbox,'Value')
 end
 % keyboard
 
-
+% keyboard
 % Calculate ratiometric image
 [ratio_img, bw_pix_pass, pix_vals_st] = nanoxim_CalculateRatiomImage(bck_img,for_img, ...
     rgb_thresh, numerator_chan_ind,denominator_chan_ind);
@@ -417,8 +418,13 @@ setappdata(handles.figure_nanoxim,'pix_vals_st',pix_vals_st);
 % Stop Busy Spinner
 handles.busy_spinner.stop;
 
+% keyboard
+
 % Update GUI
 gui_UpdateRatioSlider(handles);
+drawnow
+clear cleanup
+% setappdata(0,'calculating_flag',0);
 gui_UpdateRatiomImage(handles.axes_ratiom,handles);
 
 

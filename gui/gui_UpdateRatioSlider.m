@@ -12,7 +12,6 @@ if isempty(max_val); error(['Max value of Ratiometric is empty:' ...
         ' likely there is no signal present after background subtraction']);
 end
 % Set range of slider values
-% keyboard
 handles.rslider_ratiom.setMaximum(max_val);
 handles.rslider_ratiom.setMinimum(0);
 handles.rslider_ratiom.setLabelTable([]);
@@ -23,5 +22,5 @@ handles.rslider_ratiom.setHighValue(max_val);
 handles.rslider_ratiom.setLowValue(0);
 set(handles.edit_ratiom_max,'String',num2str(ceil(max_val)))
 
-
+guidata(handles.figure_nanoxim,handles);
 end

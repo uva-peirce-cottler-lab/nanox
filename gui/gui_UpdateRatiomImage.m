@@ -1,8 +1,7 @@
 function gui_UpdateRatiomImage(target_handle, handles)
 dprintf('Updating Ratiometric Image');
-% keyboard    
 handles = guidata(handles.figure_nanoxim);
-
+if getappdata(0,'calculating_flag'); return; end
 
 % Get image
 ratio_img = getappdata(handles.figure_nanoxim,'ratio_img');
@@ -33,6 +32,7 @@ colormap(target_handle, vertcat([0 0 0], cmap));
 color_range = [str2double(get(handles.edit_ratiom_low,'String')) ...
     str2double(get(handles.edit_ratiom_high,'String'))];
 color_slice = abs(diff(color_range))./64;
+% keyboard 
 
 ratio_img_disp = ratio_img;
 ratio_img_disp(~bw_roi_pix_pass)=-10*color_slice;
@@ -48,7 +48,7 @@ h = colorbar(target_handle);
 
 % Do not display bottom of color bar range
 ylim = get(h,'ylim');
-set(h,'ylim',[0 ylim(2)]);
+set(h,'ylim',color_range);
 
 % Channel index for top portion of ratio
 chan_str = 'RGB';
@@ -86,5 +86,5 @@ set(handles.numerator_output,'String',numerator_str);
 dprintf(out_str);
 dprintf(denominator_str);
 dprintf(numerator_str);
-
+% keyboard   
 end

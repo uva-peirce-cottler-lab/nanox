@@ -32,7 +32,7 @@ function [hcomponent, hcontainer, rangeSlider] = gui_RangeSlider(val_range,...
     set(min_textbox,'String',num2str(val_range(1)));
     set(max_textbox,'String',num2str(val_range(2)));
     
-    function updateTextValues(~, ~)
+    function updateTextValues(~,~)
         set(min_textbox, 'String',num2str(rangeSlider.getLowValue()));
         set(max_textbox, 'String',num2str(rangeSlider.getHighValue()));
 
