@@ -2,28 +2,31 @@ function gui_UpdateRatiomImage(target_handle, handles)
 dprintf('Updating Ratiometric Image');
 handles = guidata(handles.figure_nanoxim);
 if getappdata(0,'calculating_flag'); return; end
-
-% Get image
-ratio_img = getappdata(handles.figure_nanoxim,'ratio_img');
-if isempty(ratio_img); return; end
  
 % Get ROI mask from memory (load from disk done when video loaded
 bw_roi_ratiom = getappdata(handles.figure_nanoxim,'bw_roi_ratiom');
-if isempty(bw_roi_ratiom)
-    bw_roi_ratiom = true(size(ratio_img));
-end
+if isempty(bw_roi_ratiom); bw_roi_ratiom = true(size(ratio_img)); end
 
-% Get Pix pass
+% Get pix pass
 bw_pix_pass = getappdata(handles.figure_nanoxim,'bw_pix_pass');
-
-% ROI is union of ROI and pixpass
+% ROI is union of [ROI and pixpass]
 bw_roi_pix_pass = bw_pix_pass & bw_roi_ratiom;
 
+% Channel Specific output
+st = getappdata(handles.figure_nanoxim,'pix_vals_st');
+if isempty(st); return; end
+% Must apply passed pixels and ROI for denominator and numerator pixel
+% values
+filtpix = @(x) x(bw_roi_pix_pass);
+% Calculate ratio image based on channel specific output
+ratio_img = st.numerator_backsub_vals ./ st.denominator_backsub_vals;
+
+mean(filtpix(st.numerator_backsub_vals ./ st.denominator_backsub_vals))
 
 % Displaying a heatmap image with a color bar and black with excluded
 % pixels requires an extensive hack
 
-
+ 
 % Initialize colormap jet and add black to base
 cmap = colormap(target_handle, jet);
 colormap(target_handle, vertcat([0 0 0], cmap));
@@ -32,7 +35,7 @@ colormap(target_handle, vertcat([0 0 0], cmap));
 color_range = [str2double(get(handles.edit_ratiom_low,'String')) ...
     str2double(get(handles.edit_ratiom_high,'String'))];
 color_slice = abs(diff(color_range))./64;
-% keyboard 
+
 
 ratio_img_disp = ratio_img;
 ratio_img_disp(~bw_roi_pix_pass)=-10*color_slice;
@@ -65,21 +68,18 @@ out_str = sprintf('Ratiometric (%s/%s): %.3f +- %.3f, %0.3f Pixels Used from ROI
 set(handles.text_ratiom_output,'String',out_str);
 
 
-% Channel Specific output
-st = getappdata(handles.figure_nanoxim,'pix_vals_st');
-
 denominator_str = sprintf(['Denominator(%s): [backsub]: %.2f ' char(177) ' %.2f,  [fore]: %.2f ' char(177) ...
-    ' %.2f,  [back]: %.2f ' char(177) ' %.2f'],denominator_label,...
-    mean(st.denominator_backsub_vals), std(st.denominator_backsub_vals),...
-    mean(st.denominator_for_vals), std(st.denominator_for_vals),...
-    mean(st.denominator_back_vals), std(st.denominator_back_vals));
-set(handles.denominator_output,'String',denominator_str);
+    ' %.2f,  [back]: %.2f ' char(177) ' %.2f'], denominator_label,...
+    mean(filtpix(st.denominator_backsub_vals)), std(filtpix(st.denominator_backsub_vals)),...
+    mean(filtpix(st.denominator_for_vals)), std(filtpix(st.denominator_for_vals)),...
+    mean(filtpix(st.denominator_back_vals)), std(filtpix(st.denominator_back_vals)));
+set(handles.denominator_output, 'String', denominator_str);
 
 numerator_str = sprintf(['Numerator(%s): [backsub]: %.2f ' char(177) ' %.2f,  [fore]: %.2f ' char(177) ...
     ' %.2f,  [back]: %.2f ' char(177) ' %.2f'],numerator_label,...
-    mean(st.numerator_backsub_vals), std(st.numerator_backsub_vals),...
-    mean(st.numerator_for_vals), std(st.numerator_for_vals),...
-    mean(st.numerator_back_vals), std(st.numerator_back_vals));
+    mean(filtpix(st.numerator_backsub_vals)), std(filtpix(st.numerator_backsub_vals)),...
+    mean(filtpix(st.numerator_for_vals)), std(filtpix(st.numerator_for_vals)),...
+    mean(filtpix(st.numerator_back_vals)), std(filtpix(st.numerator_back_vals)));
 set(handles.numerator_output,'String',numerator_str);
 
 

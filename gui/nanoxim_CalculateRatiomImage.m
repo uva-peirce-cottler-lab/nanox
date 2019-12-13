@@ -1,4 +1,4 @@
-function [ratio_img, bw_pixpass, pix_st] = nanoxim_CalculateRatiomImage(bck_img, ...
+function [ratio_img, bw_pix_passed, pix_st] = nanoxim_CalculateRatiomImage(bck_img, ...
     for_img,rgb_sig_thresh, numerator_chan_ind, denominator_chan_ind)
 
 % Get back ground and forground images for each values (assigned to
@@ -18,20 +18,19 @@ backsub_denominator = for_denominator - back_denominator;
 ratio_img = double(backsub_numerator)./double(backsub_denominator);
 
 % Filter only valid pixels
-bw_pixpass = backsub_numerator>rgb_sig_thresh(denominator_chan_ind) & ...
+bw_pix_passed = backsub_numerator>rgb_sig_thresh(denominator_chan_ind) & ...
     backsub_denominator>rgb_sig_thresh(numerator_chan_ind); 
 % keyboard
-fprintf('\tFraction of Image with Valid Data: %.2f\n',sum(bw_pixpass(:))/numel(bw_pixpass))
+fprintf('\tFraction of Image with Valid Data: %.2f\n',sum(bw_pix_passed(:))/numel(bw_pix_passed))
 
-% keyboard
+% Pixel values included are not restricted to passed pixels or the ROI
+pix_st.denominator_back_vals = double(back_denominator);
+pix_st.denominator_for_vals = double(for_denominator);
+pix_st.denominator_backsub_vals = double(backsub_denominator);
 
-pix_st.denominator_back_vals = double(back_denominator(bw_pixpass));
-pix_st.denominator_for_vals = double(for_denominator(bw_pixpass));
-pix_st.denominator_backsub_vals = double(backsub_denominator(bw_pixpass));
-
-pix_st.numerator_back_vals = double(back_numerator(bw_pixpass));
-pix_st.numerator_for_vals = double(for_numerator(bw_pixpass));
-pix_st.numerator_backsub_vals = double(backsub_numerator(bw_pixpass));
-
+pix_st.numerator_back_vals = double(back_numerator);
+pix_st.numerator_for_vals = double(for_numerator);
+pix_st.numerator_backsub_vals = double(backsub_numerator);
+pix_st.bw_pix_passed = bw_pix_passed;
 
 % keyboard
