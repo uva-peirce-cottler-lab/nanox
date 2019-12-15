@@ -42,7 +42,7 @@ imshow(rgb_ratio_passed,'Parent',target_handle);
 axes(target_handle);
 colormap(jet);
 caxis(color_range);
-colorbar
+colorbar;
 
 
 
