@@ -22,7 +22,7 @@ function varargout = nanoxim(varargin)
 
 % Edit the above text to modify the response to help nanoxim
 
-% Last Modified by GUIDE v2.5 17-Dec-2019 16:01:29
+% Last Modified by GUIDE v2.5 17-Dec-2019 16:31:14
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -375,39 +375,20 @@ rgb_thresh = [str2double(get(handles.edit_red_threshold,'String')) 0 ...
 
 % Start busy spinner (calculations takes a while)
 handles.busy_spinner.start;
-if get(handles.radiobutton_video,'Value')==1
-    % Get Background and Foreground Images from videos
-    
-    bck_img = nanoxim_GetFrameRangeImg(vid_obj, bck_frame_range);
-    for_img = nanoxim_GetFrameRangeImg(vid_obj, for_frame_range);
-else
-    bck_img_path = getappdata(handles.figure_nanoxim, 'bck_img_path');
-    for_img_path = getappdata(handles.figure_nanoxim, 'for_img_path');
-    
-    % Get Background image
-    if ~isempty(regexp(bck_img_path,'.*\.(?:jpg|jpeg|gif|png|bmp|tif|tiff)$','once'))
-         bck_img = imread(bck_img_path);
-    else
-         bck_img =  max(load_video(bck_img_path),[],4);
-    end
-    
-      % Get Foreground Image
-    if ~isempty(regexp(for_img_path,'.*\.(?:jpg|jpeg|gif|png|bmp|tif|tiff)$','once'))
-         for_img = 50+imread(for_img_path);
-    else
-         for_img =  max(load_video(for_img_path),[],4);
-    end
-    
-end
+[bck_img, for_img]=nanoxim_load_for_and_back_images(handles);
 
 % Zero background subtraction if specified by user
 if ~get(handles.ratiom_subtractbackground_checkbox,'Value')
     bck_img = zeros(size(for_img),class(for_img));
 end
 
+% Get displacement coordinates
+xy_shift = [str2double(get(handles.x_shift_edit, 'String')) ...
+    str2double(get(handles.y_shift_edit, 'String'))];
+
 % Calculate ratiometric image
 [ratio_img, bw_pix_pass, pix_vals_st] = nanoxim_CalculateRatiomImage(bck_img,for_img, ...
-    rgb_thresh, numerator_chan_ind,denominator_chan_ind,blur_rad_pix);
+    rgb_thresh, numerator_chan_ind,denominator_chan_ind,blur_rad_pix,xy_shift);
 setappdata(handles.figure_nanoxim,'ratio_img',ratio_img);
 setappdata(handles.figure_nanoxim,'bw_pix_pass',bw_pix_pass);
 setappdata(handles.figure_nanoxim,'pix_vals_st',pix_vals_st);
@@ -1076,7 +1057,7 @@ update_alignment_image(handles)
 function update_alignment_image(handles)
 
 
-% Get fisplacement coordinates
+% Get displacement coordinates
 x = str2double(get(handles.x_shift_edit, 'String'));
 y = str2double(get(handles.y_shift_edit, 'String'));
 
@@ -1085,19 +1066,13 @@ bck_img = getappdata(handles.figure_nanoxim,'bck_img');
 for_img = getappdata(handles.figure_nanoxim,'for_img');
 
 if (isempty(bck_img) || isempty(for_img))
-    if get(handles.radiobutton_video,'Value')==1
-        
-    else
-        % Dual mode
-        bck_img = imread(get(handles.edit_bck_img_path,'String'));
-        for_img = imread(get(handles.edit_for_img_path,'String'));
-    end
+    [bck_img, for_img]=nanoxim_load_for_and_back_images(handles);
     setappdata(handles.figure_nanoxim,'bck_img', bck_img);
     setappdata(handles.figure_nanoxim,'for_img', for_img);
 end
 
 % Render result
-shifted_for_img = imtranslate(for_img,[x, y],'OutputView','full');
+shifted_for_img = imtranslate(for_img,[x, y],'OutputView','same','FillValues',NaN);
 setappdata(handles.figure_nanoxim, 'shifted_for_img', shifted_for_img);
 
 
@@ -1118,7 +1093,7 @@ function x_shift_edit_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of x_shift_edit as text
 %        str2double(get(hObject,'String')) returns contents of x_shift_edit as a double
-
+update_alignment_image(handles);
 
 % --- Executes during object creation, after setting all properties.
 function x_shift_edit_CreateFcn(hObject, eventdata, handles)
@@ -1141,7 +1116,7 @@ function y_shift_edit_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of y_shift_edit as text
 %        str2double(get(hObject,'String')) returns contents of y_shift_edit as a double
-
+update_alignment_image(handles);
 
 % --- Executes during object creation, after setting all properties.
 function y_shift_edit_CreateFcn(hObject, eventdata, handles)
@@ -1166,26 +1141,49 @@ function figure_nanoxim_WindowKeyPressFcn(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 is_align_mode = get(handles.align_togglebutton,'Value');
-
+shift_delta = str2double(get(handles.shift_delta_edit,'String'));
 
 switch eventdata.Key
     case 'rightarrow'
         if is_align_mode
-            set(handles.x_shift_edit,'String',sprintf('%d', str2double(get(handles.x_shift_edit,'String'))+1))
+            set(handles.x_shift_edit,'String',sprintf('%d', str2double(get(handles.x_shift_edit,'String'))+shift_delta))
         end
     case 'leftarrow'
         if is_align_mode
-            set(handles.x_shift_edit,'String',sprintf('%d', str2double(get(handles.x_shift_edit,'String'))-1))
+            set(handles.x_shift_edit,'String',sprintf('%d', str2double(get(handles.x_shift_edit,'String'))-shift_delta))
         end
     case 'uparrow'
         if is_align_mode
-            set(handles.y_shift_edit,'String',sprintf('%d', str2double(get(handles.y_shift_edit,'String'))+1))
+            set(handles.y_shift_edit,'String',sprintf('%d', str2double(get(handles.y_shift_edit,'String'))+shift_delta))
         end
     case 'downarrow'   
         if is_align_mode
-            set(handles.y_shift_edit,'String',sprintf('%d', str2double(get(handles.y_shift_edit,'String'))-1))
+            set(handles.y_shift_edit,'String',sprintf('%d', str2double(get(handles.y_shift_edit,'String'))-shift_delta))
         end
 end
 
 
  if is_align_mode; update_alignment_image(handles); end
+
+
+
+function shift_delta_edit_Callback(hObject, eventdata, handles)
+% hObject    handle to shift_delta_edit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of shift_delta_edit as text
+%        str2double(get(hObject,'String')) returns contents of shift_delta_edit as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function shift_delta_edit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to shift_delta_edit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
