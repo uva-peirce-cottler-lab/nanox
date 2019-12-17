@@ -22,7 +22,7 @@ function varargout = nanoxim(varargin)
 
 % Edit the above text to modify the response to help nanoxim
 
-% Last Modified by GUIDE v2.5 16-Dec-2019 17:42:30
+% Last Modified by GUIDE v2.5 17-Dec-2019 16:01:29
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -1061,17 +1061,52 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on button press in align_pushbutton.
-function align_pushbutton_Callback(hObject, eventdata, handles)
-% hObject    handle to align_pushbutton (see GCBO)
+% --- Executes on button press in align_togglebutton.
+function align_togglebutton_Callback(hObject, eventdata, handles)
+% hObject    handle to align_togglebutton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Disable all sliders
-% Disable all push buttons
+% Display alignment image
+update_alignment_image(handles)
 
 
 
+
+function update_alignment_image(handles)
+
+
+% Get fisplacement coordinates
+x = str2double(get(handles.x_shift_edit, 'String'));
+y = str2double(get(handles.y_shift_edit, 'String'));
+
+% Displace second image and padd
+bck_img = getappdata(handles.figure_nanoxim,'bck_img');
+for_img = getappdata(handles.figure_nanoxim,'for_img');
+
+if (isempty(bck_img) || isempty(for_img))
+    if get(handles.radiobutton_video,'Value')==1
+        
+    else
+        % Dual mode
+        bck_img = imread(get(handles.edit_bck_img_path,'String'));
+        for_img = imread(get(handles.edit_for_img_path,'String'));
+    end
+    setappdata(handles.figure_nanoxim,'bck_img', bck_img);
+    setappdata(handles.figure_nanoxim,'for_img', for_img);
+end
+
+% Render result
+shifted_for_img = imtranslate(for_img,[x, y],'OutputView','full');
+setappdata(handles.figure_nanoxim, 'shifted_for_img', shifted_for_img);
+
+
+blended_img = imfuse(bck_img,shifted_for_img,'falsecolor','Scaling','none');
+ setappdata(handles.figure_nanoxim, 'blended_img', blended_img);
+ 
+imshow(blended_img,'Parent', handles.axes_img);
+
+% keyboard
 
 
 
@@ -1119,3 +1154,38 @@ function y_shift_edit_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on key press with focus on figure_nanoxim or any of its controls.
+function figure_nanoxim_WindowKeyPressFcn(hObject, eventdata, handles)
+% hObject    handle to figure_nanoxim (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.FIGURE)
+%	Key: name of the key that was pressed, in lower case
+%	Character: character interpretation of the key(s) that was pressed
+%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
+% handles    structure with handles and user data (see GUIDATA)
+
+is_align_mode = get(handles.align_togglebutton,'Value');
+
+
+switch eventdata.Key
+    case 'rightarrow'
+        if is_align_mode
+            set(handles.x_shift_edit,'String',sprintf('%d', str2double(get(handles.x_shift_edit,'String'))+1))
+        end
+    case 'leftarrow'
+        if is_align_mode
+            set(handles.x_shift_edit,'String',sprintf('%d', str2double(get(handles.x_shift_edit,'String'))-1))
+        end
+    case 'uparrow'
+        if is_align_mode
+            set(handles.y_shift_edit,'String',sprintf('%d', str2double(get(handles.y_shift_edit,'String'))+1))
+        end
+    case 'downarrow'   
+        if is_align_mode
+            set(handles.y_shift_edit,'String',sprintf('%d', str2double(get(handles.y_shift_edit,'String'))-1))
+        end
+end
+
+
+ if is_align_mode; update_alignment_image(handles); end
