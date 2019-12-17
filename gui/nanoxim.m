@@ -22,7 +22,7 @@ function varargout = nanoxim(varargin)
 
 % Edit the above text to modify the response to help nanoxim
 
-% Last Modified by GUIDE v2.5 09-May-2019 15:43:52
+% Last Modified by GUIDE v2.5 16-Dec-2019 17:42:30
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -378,38 +378,36 @@ handles.busy_spinner.start;
 if get(handles.radiobutton_video,'Value')==1
     % Get Background and Foreground Images from videos
     
-    bck_img = nanoxim_GetFrameRangeImg(vid_obj, bck_frame_range, blur_rad_pix);
-    for_img = nanoxim_GetFrameRangeImg(vid_obj, for_frame_range, blur_rad_pix);
+    bck_img = nanoxim_GetFrameRangeImg(vid_obj, bck_frame_range);
+    for_img = nanoxim_GetFrameRangeImg(vid_obj, for_frame_range);
 else
     bck_img_path = getappdata(handles.figure_nanoxim, 'bck_img_path');
     for_img_path = getappdata(handles.figure_nanoxim, 'for_img_path');
     
-    % Get Background and Foreground Images
+    % Get Background image
     if ~isempty(regexp(bck_img_path,'.*\.(?:jpg|jpeg|gif|png|bmp|tif|tiff)$','once'))
          bck_img = imread(bck_img_path);
     else
          bck_img =  max(load_video(bck_img_path),[],4);
     end
     
-      % Get Background and Foreground Images
+      % Get Foreground Image
     if ~isempty(regexp(for_img_path,'.*\.(?:jpg|jpeg|gif|png|bmp|tif|tiff)$','once'))
-         for_img = imread(for_img_path);
+         for_img = 50+imread(for_img_path);
     else
          for_img =  max(load_video(for_img_path),[],4);
     end
     
 end
 
-% Exclude background subtraction if specified by user
+% Zero background subtraction if specified by user
 if ~get(handles.ratiom_subtractbackground_checkbox,'Value')
     bck_img = zeros(size(for_img),class(for_img));
 end
-% keyboard
 
-% keyboard
 % Calculate ratiometric image
 [ratio_img, bw_pix_pass, pix_vals_st] = nanoxim_CalculateRatiomImage(bck_img,for_img, ...
-    rgb_thresh, numerator_chan_ind,denominator_chan_ind);
+    rgb_thresh, numerator_chan_ind,denominator_chan_ind,blur_rad_pix);
 setappdata(handles.figure_nanoxim,'ratio_img',ratio_img);
 setappdata(handles.figure_nanoxim,'bw_pix_pass',bw_pix_pass);
 setappdata(handles.figure_nanoxim,'pix_vals_st',pix_vals_st);
@@ -1053,6 +1051,66 @@ end
 % --- Executes during object creation, after setting all properties.
 function denominator_output_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to numerator_output (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in align_pushbutton.
+function align_pushbutton_Callback(hObject, eventdata, handles)
+% hObject    handle to align_pushbutton (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Disable all sliders
+% Disable all push buttons
+
+
+
+
+
+
+
+function x_shift_edit_Callback(hObject, eventdata, handles)
+% hObject    handle to x_shift_edit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of x_shift_edit as text
+%        str2double(get(hObject,'String')) returns contents of x_shift_edit as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function x_shift_edit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to x_shift_edit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function y_shift_edit_Callback(hObject, eventdata, handles)
+% hObject    handle to y_shift_edit (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of y_shift_edit as text
+%        str2double(get(hObject,'String')) returns contents of y_shift_edit as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function y_shift_edit_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to y_shift_edit (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
