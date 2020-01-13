@@ -1,5 +1,17 @@
 function [bck_img, for_img]=nanoxim_load_for_and_back_images(handles)
 
+
+
+% Handle to load video frames
+vid_obj = getappdata(handles.figure_nanoxim,'rgb_vid');
+if isempty(vid_obj)
+    vid_obj = getappdata(handles.figure_nanoxim,'vid_handle');
+end
+
+% Get background range
+bck_frame_range = [handles.rslider_bck.getLowValue() handles.rslider_bck.HighValue()];
+for_frame_range = [handles.rslider_for.getLowValue() handles.rslider_for.HighValue()];
+
 if get(handles.radiobutton_video,'Value')==1
     % Get Background and Foreground Images from videos
     

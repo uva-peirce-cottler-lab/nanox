@@ -357,9 +357,7 @@ denominator_chan_ind = regexp(chan_str,get(get(handles.uibuttongroup_bot,...
     'SelectedObject'),'String'),'once');
 
 
-% Get background range
-bck_frame_range = [handles.rslider_bck.getLowValue() handles.rslider_bck.HighValue()];
-for_frame_range = [handles.rslider_for.getLowValue() handles.rslider_for.HighValue()];
+
 
 % Handle to load video frames
 vid_obj = getappdata(handles.figure_nanoxim,'rgb_vid');
