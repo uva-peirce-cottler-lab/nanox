@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<appProperties xmlns="http://schemas.mathworks.com/matlab/app/2012/appProperties" signature="20C07EA6965621140BDD228B4BCFF92CDB4CBA92">
+
+  <entryPoint>master_guide</entryPoint>
+
+  <name>Dual-Emission Luminescence Analysis</name>
+
+  <version>1.0</version>
+
+  <createdByMATLABRelease>(R2016a)</createdByMATLABRelease>
+
+  <GUID>88c4891d-d316-4bb7-a436-2bfd9a080586</GUID>
+
+  <description>Email me if you have any questions, comments, concerns, queries, or quandries. 
+rd8at@virginia.edu</description>
+
+  <author>
+    <name>Richard Doty</name>
+    <contact>rd8at@virginia.edu</contact>
+    <organization>UVA Chemistry</organization>
+  </author>
+
+  <supportedPlatforms/>
+
+  <requiredProducts>
+    <product identifier="60" name="Curve Fitting Toolbox" version="3.5.3"/>
+    <product identifier="1" name="MATLAB" version="9.0"/>
+    <product identifier="8" name="Signal Processing Toolbox" version="7.2"/>
+    <product identifier="19" name="Statistics and Machine Learning Toolbox" version="10.2"/>
+  </requiredProducts>
+
+  <numFiles>16</numFiles>
+
+  <created>2016-06-15T11:18:17Z</created>
+
+  <appEntries>
+    <appFile>/master_guide.m</appFile>
+    <appFile>/BF2nbm(i)PLA camera&amp;florimeter calibrations.xlsx</appFile>
+    <appFile>/Camera.xlsx</appFile>
+    <appFile>/Camera2.xlsx</appFile>
+    <appFile>/CD_i_3_OC12_Naphthyl_2.5%.xlsx</appFile>
+    <appFile>/CD_i_3_OC12_Phenyl_2.5%.xlsx</appFile>
+    <appFile>/CD_i_3OC12_Phen_PLAPEG.xlsx</appFile>
+    <appFile>/FW_i_van_phen_PLA-PEG.xlsx</appFile>
+    <appFile>/IPhPh_7KNP Calibration.xlsx</appFile>
+    <appFile>/MZ_i_3,4_OC12_Naphthyl_2.5%.xlsx</appFile>
+    <appFile>/MZ_i_vanilin_nap_PLAPEG.xlsx</appFile>
+    <appFile>/master_guide.fig</appFile>
+    <appFile>/sub_gui1.fig</appFile>
+    <appFile>/sub_gui1.m</appFile>
+    <appFile>/sub_gui2.fig</appFile>
+    <appFile>/sub_gui2.m</appFile>
+  </appEntries>
+
+</appProperties>
